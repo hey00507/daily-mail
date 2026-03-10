@@ -1,0 +1,59 @@
+name: Daily Mail
+
+on:
+  schedule:
+    - cron: '30 22 * * 0-4'      # KST 07:30 — News Brief
+    - cron: '40 22 * * 0-4'      # KST 07:40 — CS Daily
+    - cron: '50 22 * * 0-4'      # KST 07:50 — Today Brief
+  workflow_dispatch:
+    inputs:
+      module:
+        description: 'Mail module to run (news-brief, cs-daily, today-brief, all)'
+        required: false
+        default: 'all'
+
+env:
+  CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+  GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+  GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+jobs:
+  send-mail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Determine module
+        id: module
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "target=${{ github.event.inputs.module }}" >> $GITHUB_OUTPUT
+          else
+            MINUTE=$(date -u +%M)
+            case $MINUTE in
+              30) echo "target=news-brief" >> $GITHUB_OUTPUT ;;
+              40) echo "target=cs-daily" >> $GITHUB_OUTPUT ;;
+              50) echo "target=today-brief" >> $GITHUB_OUTPUT ;;
+              *)  echo "target=all" >> $GITHUB_OUTPUT ;;
+            esac
+          fi
+
+      - name: Send mail
+        run: ./gradlew bootRun --args="--mail.module=${{ steps.module.outputs.target }}"
+
+      - name: Commit history
+        run: |
+          git config user.name "daily-mail-bot"
+          git config user.email "bot@dailymail"
+          git add data/history.json
+          git diff --cached --quiet || git commit -m "[skip ci] ${{ steps.module.outputs.target }} $(date +%Y-%m-%d)"
+          git push
