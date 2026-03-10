@@ -28,20 +28,29 @@ GitHub Actions cron이 매일 아침 3회 실행하고,
 - Spring Mail + Thymeleaf — 메일 발송
 - GitHub Actions — 스케줄링 + CI/CD
 
-## 패키지 구조
+## 패키지 구조 (도메인 기준)
+
+기술 레이어가 아닌 도메인(기능) 기준으로 분리한다.
+새 메일 모듈 추가 = 패키지 1개 추가로 완결. 모듈 삭제 = 패키지 통째로 삭제.
 
 ```
 com.dailymail
-├── runner/MailRunner           CommandLineRunner. mail.module arg에 따라 해당 모듈 실행.
-├── mail/MailModule             공통 인터페이스. name(), isEnabled(), generate().
-├── mail/NewsBriefMail          RSS 수집 → Claude 요약 → 메일 콘텐츠 생성
-├── mail/CsDailyMail            카테고리 랜덤 선택 → Claude로 CS 콘텐츠 생성
-├── mail/TodayBriefMail         Google Calendar API → 당일 일정 조회 → 일정 없으면 스킵
-├── service/ClaudeService       Claude API 호출 (Haiku). 프롬프트 조립 + 응답 파싱.
-├── service/RssService          RSS 피드 수집. tech + 시사/경제 소스 분리.
-├── service/CalendarService     Google Calendar API. OAuth 2.0 인증.
-├── service/MailService         Spring Mail로 발송. Thymeleaf 템플릿 렌더링.
-└── config/MailConfig           모듈별 설정 바인딩 (application.yml)
+├── core/                        ← 공통 (여러 모듈이 공유)
+│   ├── MailModule               인터페이스. name(), isEnabled(), generate().
+│   ├── MailRunner               CommandLineRunner. mail.module arg에 따라 해당 모듈 실행.
+│   ├── MailService              Spring Mail 발송 + Thymeleaf 렌더링.
+│   └── ClaudeService            Claude API 호출 (Haiku). 프롬프트 조립 + 응답 파싱.
+├── news/                        ← News Brief 모듈
+│   ├── NewsBriefMail            MailModule 구현. RSS 수집 → Claude 요약 → 메일 콘텐츠.
+│   └── RssService               RSS 피드 수집. tech + 시사/경제 소스 분리.
+├── cs/                          ← CS Daily 모듈
+│   └── CsDailyMail              MailModule 구현. 카테고리 랜덤 → Claude 콘텐츠 생성.
+├── today/                       ← Today Brief 모듈
+│   ├── TodayBriefMail           MailModule 구현. 일정 조회 → 없으면 스킵.
+│   └── CalendarService          Google Calendar API. OAuth 2.0 인증.
+├── config/
+│   └── MailConfig               모듈별 설정 바인딩 (application.yml)
+└── DailyMailApplication         Spring Boot 진입점
 ```
 
 ## 설정
@@ -71,9 +80,11 @@ com.dailymail
 
 ## 새 메일 모듈 추가 방법
 
-1. `MailModule` 인터페이스를 구현하는 클래스 생성
-2. `application.yml`의 `mail.modules`에 설정 추가
-3. `MailRunner`에서 자동으로 인식됨 (Spring Bean 스캔)
+1. 새 패키지 생성 (예: `com.dailymail.weekly/`)
+2. `MailModule` 인터페이스를 구현하는 클래스 생성
+3. 모듈 전용 서비스가 필요하면 같은 패키지에 생성
+4. `application.yml`의 `mail.modules`에 설정 추가
+5. `MailRunner`에서 자동으로 인식됨 (Spring Bean 스캔)
 
 ## 코딩 컨벤션
 

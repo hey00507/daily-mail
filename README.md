@@ -67,23 +67,26 @@ GitHub Actions cron
 
 ## 프로젝트 구조
 
+도메인(기능) 기준으로 패키지를 분리한다. 모듈 추가 = 패키지 1개.
+
 ```
 src/main/java/com/dailymail/
-├── DailyMailApplication.java
-├── runner/
-│   └── MailRunner.java              # CommandLineRunner
-├── mail/
-│   ├── MailModule.java              # 공통 인터페이스
+├── core/                            # 공통 (메일 발송, Claude API, 실행기)
+│   ├── MailModule.java
+│   ├── MailRunner.java
+│   ├── MailService.java
+│   └── ClaudeService.java
+├── news/                            # News Brief
 │   ├── NewsBriefMail.java
-│   ├── CsDailyMail.java
-│   └── TodayBriefMail.java
-├── service/
-│   ├── ClaudeService.java           # Claude API
-│   ├── RssService.java              # RSS 수집
-│   ├── CalendarService.java         # Google Calendar API
-│   └── MailService.java             # 메일 발송
-└── config/
-    └── MailConfig.java
+│   └── RssService.java
+├── cs/                              # CS Daily
+│   └── CsDailyMail.java
+├── today/                           # Today Brief
+│   ├── TodayBriefMail.java
+│   └── CalendarService.java
+├── config/
+│   └── MailConfig.java
+└── DailyMailApplication.java
 ```
 
 ## 설정
