@@ -25,7 +25,6 @@ mail:
         - 정치
     cs-daily:
       enabled: true
-      category-weights: null
     today-brief:
       enabled: true
       skip-if-empty: true           # 일정 없으면 메일 안 보냄

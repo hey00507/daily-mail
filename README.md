@@ -71,11 +71,12 @@ GitHub Actions cron
 
 ```
 src/main/java/com/dailymail/
-├── core/                            # 공통 (메일 발송, Claude API, 실행기)
+├── core/                            # 공통 (메일 발송, Claude API, 실행기, 이력)
 │   ├── MailModule.java
 │   ├── MailRunner.java
 │   ├── MailService.java
-│   └── ClaudeService.java
+│   ├── ClaudeService.java
+│   └── HistoryService.java
 ├── news/                            # News Brief
 │   ├── NewsBriefMail.java
 │   └── RssService.java
@@ -89,28 +90,84 @@ src/main/java/com/dailymail/
 └── DailyMailApplication.java
 ```
 
-## 설정
+## 로컬 환경 세팅
 
-GitHub Secrets:
+### 1. CLAUDE_API_KEY — Anthropic API 키
 
+CS 콘텐츠 생성 + 뉴스 요약에 사용. Haiku 모델 기준 하루 ~10원.
+
+1. [Anthropic Console](https://console.anthropic.com/) 접속
+2. Settings → API Keys → **Create Key**
+3. 생성된 `sk-ant-...` 키를 복사
+
+### 2. GMAIL_ADDRESS / GMAIL_APP_PASSWORD — Gmail 발송
+
+일반 Gmail 비밀번호가 아닌 **앱 비밀번호**가 필요하다.
+
+1. [Google 계정 보안](https://myaccount.google.com/security) 접속
+2. **2단계 인증** 활성화 (이미 활성화되어 있으면 스킵)
+3. [앱 비밀번호 생성](https://myaccount.google.com/apppasswords) 페이지 접속
+4. 앱 이름에 `daily-mail` 입력 → **만들기**
+5. 생성된 16자리 비밀번호를 복사 (예: `abcd efgh ijkl mnop`)
+
+- `GMAIL_ADDRESS`: 발송 **및** 수신에 사용할 Gmail (예: `your@gmail.com`)
+- `GMAIL_APP_PASSWORD`: 위에서 생성한 16자리 앱 비밀번호
+
+### 3. GOOGLE_CREDENTIALS — Google Calendar API (선택)
+
+Today Brief 모듈에서만 사용. 설정하지 않으면 일정 메일만 스킵되고 나머지는 정상 동작.
+
+1. [Google Cloud Console](https://console.cloud.google.com/) 접속
+2. 새 프로젝트 생성 (또는 기존 프로젝트 선택)
+3. **API 및 서비스** → **라이브러리** → "Google Calendar API" 검색 → **사용 설정**
+4. **API 및 서비스** → **사용자 인증 정보** → **서비스 계정 만들기**
+   - 이름: `daily-mail`
+   - 역할: 없음 (기본)
+   - 완료
+5. 생성된 서비스 계정 클릭 → **키** 탭 → **키 추가** → **JSON**
+   - JSON 파일이 다운로드됨
+6. Google Calendar에서 서비스 계정에 캘린더 공유:
+   - [Google Calendar](https://calendar.google.com/) → 설정 → 내 캘린더 → **특정 사용자와 공유**
+   - 서비스 계정 이메일 추가 (예: `daily-mail@project-id.iam.gserviceaccount.com`)
+   - 권한: **일정의 세부정보 보기**
+7. JSON 파일을 Base64로 인코딩:
+   ```bash
+   base64 -i path/to/credentials.json | tr -d '\n'
+   ```
+8. 출력된 문자열을 `GOOGLE_CREDENTIALS`에 설정
+
+### 환경변수 설정
+
+```bash
+# ~/.zshrc 또는 ~/.bashrc에 추가 (로컬 개발용)
+export CLAUDE_API_KEY=sk-ant-api03-...
+export GMAIL_ADDRESS=your@gmail.com
+export GMAIL_APP_PASSWORD="abcd efgh ijkl mnop"
+export GOOGLE_CREDENTIALS=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50Ii...  # 선택
 ```
-CLAUDE_API_KEY         # Anthropic API key
-GMAIL_ADDRESS          # 발송/수신 Gmail
-GMAIL_APP_PASSWORD     # Gmail 앱 비밀번호
-GOOGLE_CREDENTIALS     # Google Calendar OAuth JSON (Base64)
+
+또는 실행 시 직접 지정:
+```bash
+CLAUDE_API_KEY=... GMAIL_ADDRESS=... GMAIL_APP_PASSWORD=... \
+  ./gradlew bootRun --args="--mail.module=cs-daily"
 ```
 
 ## 실행
 
 ```bash
-# 로컬 테스트 (전체)
-CLAUDE_API_KEY=... GMAIL_ADDRESS=... GMAIL_APP_PASSWORD=... \
-  ./gradlew bootRun
-
 # 특정 모듈만 실행
 ./gradlew bootRun --args="--mail.module=news-brief"
 ./gradlew bootRun --args="--mail.module=cs-daily"
 ./gradlew bootRun --args="--mail.module=today-brief"
+
+# 전체 모듈 실행
+./gradlew bootRun
+
+# 테스트 (커버리지 리포트 자동 생성)
+./gradlew test
+
+# 커버리지 리포트 확인
+open build/reports/jacoco/test/html/index.html
 ```
 
 ## 확장

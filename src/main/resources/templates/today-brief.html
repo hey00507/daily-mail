@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #1a1a1a;
+            background-color: #ffffff;
+            line-height: 1.7;
+        }
+        .header {
+            border-bottom: 2px solid #1a1a1a;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+        .header .meta {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .event-list {
+            list-style: none;
+            padding: 0;
+        }
+        .event-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 16px;
+        }
+        .event-item:last-child {
+            border-bottom: none;
+        }
+        .event-time {
+            font-size: 15px;
+            font-weight: 600;
+            min-width: 50px;
+            color: #1a1a1a;
+        }
+        .event-detail {
+            flex: 1;
+        }
+        .event-title {
+            font-size: 15px;
+        }
+        .event-location {
+            font-size: 13px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .all-day-badge {
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+        .no-events {
+            text-align: center;
+            padding: 40px 0;
+            color: #999;
+            font-size: 15px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 th:text="'Today Brief — ' + ${date}">Today Brief</h1>
+        <div class="meta">오늘의 일정</div>
+    </div>
+
+    <div th:if="${hasEvents}">
+        <ul class="event-list">
+            <li th:each="event : ${events}" class="event-item">
+                <div class="event-time">
+                    <span th:if="${event.allDay}" class="all-day-badge">종일</span>
+                    <span th:unless="${event.allDay}" th:text="${event.startTime}">09:00</span>
+                </div>
+                <div class="event-detail">
+                    <div class="event-title" th:text="${event.title}">일정 제목</div>
+                    <div class="event-location" th:if="${event.location != null}" th:text="${event.location}">장소</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div th:unless="${hasEvents}" class="no-events">
+        오늘은 등록된 일정이 없습니다.
+    </div>
+
+    <div class="footer">
+        Daily Mail — 게으른 개발자를 위한 모닝 브리핑
+    </div>
+</body>
+</html>

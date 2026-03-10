@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #1a1a1a;
+            background-color: #ffffff;
+            line-height: 1.7;
+        }
+        .header {
+            border-bottom: 2px solid #1a1a1a;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+        .header .meta {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .content {
+            font-size: 15px;
+            white-space: pre-wrap;
+        }
+        .content h2 {
+            font-size: 17px;
+            margin-top: 28px;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 th:text="'CS Daily — ' + ${category} + ': ' + ${topic}">CS Daily</h1>
+        <div class="meta" th:text="${date}"></div>
+    </div>
+    <div class="content" th:utext="${content}"></div>
+    <div class="footer">
+        Daily Mail — 게으른 개발자를 위한 모닝 브리핑
+    </div>
+</body>
+</html>
