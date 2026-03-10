@@ -4,6 +4,8 @@ import com.dailymail.config.MailConfig;
 import com.dailymail.core.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -82,10 +84,12 @@ public class CsDailyMail implements MailModule {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MM/dd"));
         String subject = String.format("[CS] %s — %s: %s", today, selection.category, selection.topic);
 
+        String htmlContent = markdownToHtml(response);
+
         return new MailContent(subject, "cs-daily", Map.of(
                 "category", selection.category,
                 "topic", selection.topic,
-                "content", response,
+                "content", htmlContent,
                 "date", today
         ));
     }
@@ -125,6 +129,12 @@ public class CsDailyMail implements MailModule {
 
                 마크다운 형식으로 작성하되, 각 섹션을 ## 헤더로 구분해줘.
                 """.formatted(category, topic);
+    }
+
+    private String markdownToHtml(String markdown) {
+        Parser parser = Parser.builder().build();
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        return renderer.render(parser.parse(markdown));
     }
 
     private record TopicSelection(String category, String topic) {}

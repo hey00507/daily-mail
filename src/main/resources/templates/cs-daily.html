@@ -5,55 +5,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 640px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+            max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            color: #1a1a1a;
+            padding: 0;
+            color: #2d2d2d;
+            background-color: #f5f5f5;
+            line-height: 1.8;
+            -webkit-text-size-adjust: 100%;
+        }
+        .wrapper {
             background-color: #ffffff;
-            line-height: 1.7;
+            margin: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         .header {
-            border-bottom: 2px solid #1a1a1a;
-            padding-bottom: 12px;
-            margin-bottom: 24px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            padding: 28px 24px 20px;
+        }
+        .header .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            color: #a8b4d4;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
         }
         .header h1 {
-            font-size: 20px;
-            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 0 4px;
+            color: #ffffff;
         }
         .header .meta {
             font-size: 13px;
-            color: #666;
-            margin-top: 4px;
+            color: #8892b0;
+        }
+        .body {
+            padding: 24px;
         }
         .content {
             font-size: 15px;
-            white-space: pre-wrap;
+            color: #2d2d2d;
         }
         .content h2 {
             font-size: 17px;
-            margin-top: 28px;
-            margin-bottom: 8px;
-            color: #1a1a1a;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 28px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8eaf0;
+        }
+        .content h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+            margin: 20px 0 8px;
+        }
+        .content p {
+            margin: 8px 0;
+            color: #4a4a4a;
+        }
+        .content strong {
+            color: #1a1a2e;
+        }
+        .content ul, .content ol {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+        .content li {
+            margin: 6px 0;
+            color: #4a4a4a;
+        }
+        .content code {
+            background: #f0f2f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #e53e3e;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+        .content pre {
+            background: #1a1a2e;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+        .content pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        .content blockquote {
+            border-left: 3px solid #1a1a2e;
+            margin: 12px 0;
+            padding: 8px 16px;
+            background: #f8f9fb;
+            border-radius: 0 6px 6px 0;
+            color: #555;
         }
         .footer {
-            margin-top: 40px;
-            padding-top: 12px;
-            border-top: 1px solid #e0e0e0;
+            padding: 16px 24px;
+            background: #f8f9fb;
+            border-top: 1px solid #e8eaf0;
+            text-align: center;
             font-size: 12px;
-            color: #999;
+            color: #9ca3af;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1 th:text="'CS Daily — ' + ${category} + ': ' + ${topic}">CS Daily</h1>
-        <div class="meta" th:text="${date}"></div>
-    </div>
-    <div class="content" th:utext="${content}"></div>
-    <div class="footer">
-        Daily Mail — 게으른 개발자를 위한 모닝 브리핑
+    <div class="wrapper">
+        <div class="header">
+            <div class="badge" th:text="${category}">CS</div>
+            <h1 th:text="${topic}">주제</h1>
+            <div class="meta" th:text="'CS Daily &mdash; ' + ${date}"></div>
+        </div>
+        <div class="body">
+            <div class="content" th:utext="${content}"></div>
+        </div>
+        <div class="footer">
+            Daily Mail &mdash; 게으른 개발자를 위한 모닝 브리핑
+        </div>
     </div>
 </body>
 </html>

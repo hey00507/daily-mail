@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 import java.util.Map;
@@ -37,12 +38,18 @@ public class ClaudeService {
                 )
         );
 
-        Map<String, Object> response = webClient.post()
-                .uri("/v1/messages")
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+        Map<String, Object> response;
+        try {
+            response = webClient.post()
+                    .uri("/v1/messages")
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            log.error("Claude API 에러 [{}]: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw e;
+        }
 
         if (response == null || !response.containsKey("content")) {
             throw new RuntimeException("Claude API 응답 파싱 실패");
