@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: daily-mail
+  main:
+    web-application-type: none
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_ADDRESS}
+    password: ${GMAIL_APP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+mail:
+  recipient: ${GMAIL_ADDRESS}
+  module: all                       # CLI arg로 오버라이드: --mail.module=news-brief
+  modules:
+    news-brief:
+      enabled: true
+      tags:
+        - tech
+        - 부동산
+        - 경제
+        - 정치
+    cs-daily:
+      enabled: true
+      category-weights: null
+    today-brief:
+      enabled: true
+      skip-if-empty: true           # 일정 없으면 메일 안 보냄
+
+claude:
+  api-key: ${CLAUDE_API_KEY}
+  model: claude-haiku-4-5-20251001
+
+google:
+  calendar:
+    credentials: ${GOOGLE_CREDENTIALS:}
