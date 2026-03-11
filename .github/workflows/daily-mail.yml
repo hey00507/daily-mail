@@ -2,15 +2,18 @@ name: Daily Mail
 
 on:
   schedule:
-    - cron: '30 22 * * 0-4'      # KST 07:30 — News Brief
-    - cron: '40 22 * * 0-4'      # KST 07:40 — CS Daily
-    - cron: '50 22 * * 0-4'      # KST 07:50 — Today Brief
+    - cron: '30 1 * * 0-4'       # KST 10:30 — News Brief
+    - cron: '40 1 * * 0-4'       # KST 10:40 — CS Daily
+    - cron: '50 1 * * 0-4'       # KST 10:50 — Today Brief
   workflow_dispatch:
     inputs:
       module:
         description: 'Mail module to run (news-brief, cs-daily, today-brief, all)'
         required: false
         default: 'all'
+
+permissions:
+  contents: write
 
 env:
   CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
