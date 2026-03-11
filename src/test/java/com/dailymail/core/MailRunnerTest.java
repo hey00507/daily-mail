@@ -16,11 +16,13 @@ class MailRunnerTest {
         MailModule news = mockModule("news-brief", true,
                 new MailContent("[News] 테스트", "news-brief", Map.of()));
         MailService mailService = mock(MailService.class);
+        DiscordService discordService = mock(DiscordService.class);
 
-        MailRunner runner = new MailRunner(List.of(cs, news), mailService, "all");
+        MailRunner runner = new MailRunner(List.of(cs, news), mailService, discordService, "all");
         runner.run();
 
         verify(mailService, times(2)).send(any(MailContent.class));
+        verify(discordService, times(2)).send(any(MailContent.class));
     }
 
     @Test
@@ -30,8 +32,9 @@ class MailRunnerTest {
         MailModule news = mockModule("news-brief", true,
                 new MailContent("[News] 테스트", "news-brief", Map.of()));
         MailService mailService = mock(MailService.class);
+        DiscordService discordService = mock(DiscordService.class);
 
-        MailRunner runner = new MailRunner(List.of(cs, news), mailService, "cs-daily");
+        MailRunner runner = new MailRunner(List.of(cs, news), mailService, discordService, "cs-daily");
         runner.run();
 
         verify(mailService, times(1)).send(any(MailContent.class));
@@ -43,24 +46,28 @@ class MailRunnerTest {
     void 비활성화_모듈은_스킵() {
         MailModule cs = mockModule("cs-daily", false, null);
         MailService mailService = mock(MailService.class);
+        DiscordService discordService = mock(DiscordService.class);
 
-        MailRunner runner = new MailRunner(List.of(cs), mailService, "all");
+        MailRunner runner = new MailRunner(List.of(cs), mailService, discordService, "all");
         runner.run();
 
         verify(cs, never()).generate();
         verify(mailService, never()).send(any());
+        verify(discordService, never()).send(any());
     }
 
     @Test
     void generate가_null이면_발송_안함() {
         MailModule today = mockModule("today-brief", true, null);
         MailService mailService = mock(MailService.class);
+        DiscordService discordService = mock(DiscordService.class);
 
-        MailRunner runner = new MailRunner(List.of(today), mailService, "all");
+        MailRunner runner = new MailRunner(List.of(today), mailService, discordService, "all");
         runner.run();
 
         verify(today).generate();
         verify(mailService, never()).send(any());
+        verify(discordService, never()).send(any());
     }
 
     @Test
@@ -73,11 +80,13 @@ class MailRunnerTest {
         MailModule cs = mockModule("cs-daily", true,
                 new MailContent("[CS] 테스트", "cs-daily", Map.of()));
         MailService mailService = mock(MailService.class);
+        DiscordService discordService = mock(DiscordService.class);
 
-        MailRunner runner = new MailRunner(List.of(failing, cs), mailService, "all");
+        MailRunner runner = new MailRunner(List.of(failing, cs), mailService, discordService, "all");
         runner.run();
 
         verify(mailService, times(1)).send(any(MailContent.class));
+        verify(discordService, times(1)).send(any(MailContent.class));
     }
 
     private MailModule mockModule(String name, boolean enabled, MailContent content) {

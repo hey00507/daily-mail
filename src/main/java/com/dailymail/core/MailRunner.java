@@ -13,15 +13,18 @@ public class MailRunner implements CommandLineRunner {
 
     private final List<MailModule> modules;
     private final MailService mailService;
+    private final DiscordService discordService;
     private final String targetModule;
 
     public MailRunner(
             List<MailModule> modules,
             MailService mailService,
+            DiscordService discordService,
             @Value("${mail.module}") String targetModule
     ) {
         this.modules = modules;
         this.mailService = mailService;
+        this.discordService = discordService;
         this.targetModule = targetModule;
     }
 
@@ -45,6 +48,7 @@ public class MailRunner implements CommandLineRunner {
                 MailContent content = module.generate();
                 if (content != null) {
                     mailService.send(content);
+                    discordService.send(content);
                 } else {
                     log.info("[{}] 발송할 콘텐츠 없음 (스킵)", module.name());
                 }
