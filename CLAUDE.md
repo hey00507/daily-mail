@@ -7,9 +7,9 @@
 
 게으른 개발자를 위한 모닝 브리핑 시스템.
 매일 아침 3통의 메일을 보낸다:
-- 07:30 News Brief — Tech 5건 + 시사/경제 5건 (RSS + Claude 요약)
-- 07:40 CS Daily — 면접 지식 1개 (Claude 생성)
-- 07:50 Today Brief — Google Calendar 일정 요약 (있을 때만)
+- 10:30 News Brief — 정치/경제/IT 각 5건 (조선·중앙·동아·한경 RSS + Claude 요약)
+- 10:40 CS Daily — 면접 지식 1개 (Claude 생성)
+- 10:50 Today Brief — Google Calendar 일정 요약 (있을 때만)
 
 ## 아키텍처
 
@@ -42,7 +42,7 @@ com.dailymail
 │   └── ClaudeService            Claude API 호출 (Haiku). 프롬프트 조립 + 응답 파싱.
 ├── news/                        ← News Brief 모듈
 │   ├── NewsBriefMail            MailModule 구현. RSS 수집 → Claude 요약 → 메일 콘텐츠.
-│   └── RssService               RSS 피드 수집. tech + 시사/경제 소스 분리.
+│   └── RssService               RSS 피드 수집. 정치/경제/IT 카테고리별 조선·중앙·동아·한경.
 ├── cs/                          ← CS Daily 모듈
 │   └── CsDailyMail              MailModule 구현. 카테고리 랜덤 → Claude 콘텐츠 생성.
 ├── today/                       ← Today Brief 모듈
@@ -55,11 +55,15 @@ com.dailymail
 
 ## 설정
 
-환경변수 (GitHub Secrets):
+환경변수 (GitHub Secrets 8개):
 - `CLAUDE_API_KEY` — Anthropic API key
-- `GMAIL_ADDRESS` — 발송/수신 Gmail
+- `GMAIL_ADDRESS` — SMTP 로그인용 Gmail
 - `GMAIL_APP_PASSWORD` — Gmail 앱 비밀번호
-- `GOOGLE_CREDENTIALS` — Google Calendar OAuth JSON (Base64)
+- `MAIL_SENDER` — 발신자 주소 (예: hey0507+daily@gmail.com)
+- `MAIL_RECIPIENT` — 수신자 주소 (예: hey0507@gmail.com)
+- `GOOGLE_CLIENT_ID` — Google OAuth 클라이언트 ID
+- `GOOGLE_CLIENT_SECRET` — Google OAuth 클라이언트 시크릿
+- `GOOGLE_REFRESH_TOKEN` — Google OAuth 리프레시 토큰
 
 ## 데이터
 

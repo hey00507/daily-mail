@@ -14,17 +14,12 @@
 
 ## 기능 정의
 
-### 1. News Brief — 뉴스 Top 10
+### 1. News Brief — 뉴스 Top 15
 
-**IT/개발/테크** — 5건
-- 소스: Hacker News, GeekNews, TechCrunch, Verge 등
-- 태그: `#tech`
+**정치** — 5건 | **경제** — 5건 | **IT** — 5건
+- 소스: 조선일보, 중앙일보, 동아일보, 한국경제 RSS (카테고리별)
 
-**시사/경제** — 5건
-- 소스: 조선비즈, 한경, 매경, 연합뉴스 RSS 등
-- 태그: `#부동산` `#경제` `#정치`
-
-**구성**: 제목 + Claude API 한 줄 요약 + 태그 + 원문 링크
+**구성**: 제목 + Claude API 한 줄 요약(30자) + 출처 + 원문 링크
 
 ### 2. CS Daily — 면접 지식 메일링
 
@@ -56,11 +51,11 @@
 
 | 시간 (KST) | 메일 | 조건 |
 |------------|------|------|
-| 07:30 | News Brief | 매일 |
-| 07:40 | CS Daily | 매일 |
-| 07:50 | Today Brief | 일정 있을 때만 |
+| 10:30 | News Brief | 평일 |
+| 10:40 | CS Daily | 평일 |
+| 10:50 | Today Brief | 평일, 일정 있을 때만 |
 
-- GitHub Actions cron으로 3회 분리 실행
+- GitHub Actions cron으로 3회 분리 실행 (평일만, 월~금)
 - HTML 포맷 (Thymeleaf 템플릿, 모바일 대응)
 - 수신: 본인 Gmail
 
@@ -69,10 +64,10 @@
 ## 아키텍처
 
 ```
-GitHub Actions cron
-  ├── 07:30 KST → News Brief (RSS + Claude 요약)
-  ├── 07:40 KST → CS Daily (Claude 생성)
-  └── 07:50 KST → Today Brief (Google Calendar API)
+GitHub Actions cron (평일만)
+  ├── 10:30 KST → News Brief (조선·중앙·동아·한경 RSS + Claude 요약)
+  ├── 10:40 KST → CS Daily (Claude 생성)
+  └── 10:50 KST → Today Brief (Google Calendar OAuth)
         ↓
 Spring Boot CLI 배치 (web-application-type: none)
   CommandLineRunner 실행 → 메일 발송 → JVM 종료
@@ -176,7 +171,7 @@ public interface MailModule {
 | 뉴스 수집 | RSS 파싱 (WebClient) |
 | 메일 | Spring Mail + Thymeleaf |
 | 데이터 | JSON 파일 + Git 커밋 |
-| 스케줄링 | GitHub Actions cron (07:30, 07:40, 07:50 KST) |
+| 스케줄링 | GitHub Actions cron (10:30, 10:40, 10:50 KST, 평일만) |
 | CI/CD | GitHub Actions |
 
 ---
@@ -185,16 +180,19 @@ public interface MailModule {
 
 ### News Brief
 ```
-제목: [News] 03/11 — 뉴스 10선
+제목: [News] 03/11 — 뉴스 15선
 
-📰 Tech
-1. #tech  [제목] — Claude 요약 (링크)
+📰 정치
+1. [제목] — Claude 요약 (조선일보)
 2. ...
 
-📰 시사/경제
-1. #경제   [제목] — Claude 요약 (링크)
-2. #부동산  ...
-3. #정치   ...
+📰 경제
+1. [제목] — Claude 요약 (한국경제)
+2. ...
+
+📰 IT
+1. [제목] — Claude 요약 (중앙일보)
+2. ...
 ```
 
 ### CS Daily
