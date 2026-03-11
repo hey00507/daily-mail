@@ -33,27 +33,38 @@ public class DiscordService {
         return !botToken.isBlank() && !channelId.isBlank();
     }
 
+    private static final List<String> DISCORD_TEMPLATES = List.of("news-brief", "cs-daily");
+
     public void send(MailContent content) {
         if (!isEnabled()) {
             log.debug("Discord 설정 없음, 스킵");
             return;
         }
 
-        String message = toDiscordMessage(content);
-        List<String> chunks = splitMessage(message);
-
-        for (String chunk : chunks) {
-            webClient.post()
-                    .uri("/channels/{channelId}/messages", channelId)
-                    .header("Authorization", "Bot " + botToken)
-                    .header("Content-Type", "application/json")
-                    .bodyValue(Map.of("content", chunk))
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+        if (!DISCORD_TEMPLATES.contains(content.template())) {
+            log.debug("Discord 대상 아님, 스킵: {}", content.template());
+            return;
         }
 
-        log.info("Discord 발송 완료: {}", content.subject());
+        try {
+            String message = toDiscordMessage(content);
+            List<String> chunks = splitMessage(message);
+
+            for (String chunk : chunks) {
+                webClient.post()
+                        .uri("/channels/{channelId}/messages", channelId)
+                        .header("Authorization", "Bot " + botToken)
+                        .header("Content-Type", "application/json")
+                        .bodyValue(Map.of("content", chunk))
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
+            }
+
+            log.info("Discord 발송 완료: {}", content.subject());
+        } catch (Exception e) {
+            log.error("Discord 발송 실패: {}", e.getMessage());
+        }
     }
 
     private String toDiscordMessage(MailContent content) {

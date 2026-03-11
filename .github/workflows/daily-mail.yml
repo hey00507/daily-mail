@@ -12,6 +12,10 @@ on:
         required: false
         default: 'all'
 
+concurrency:
+  group: daily-mail
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -64,6 +68,12 @@ jobs:
           git config user.name "daily-mail-bot"
           git config user.email "bot@dailymail"
           git add data/history.json
-          git diff --cached --quiet || git commit -m "[skip ci] ${{ steps.module.outputs.target }} $(date +%Y-%m-%d)"
-          git pull --rebase
-          git push
+          git diff --cached --quiet && exit 0
+          git commit -m "[skip ci] ${{ steps.module.outputs.target }} $(date +%Y-%m-%d)"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs && git push && exit 0
+            echo "Retry $i..."
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          echo "::warning::Failed to push history after 3 retries"
