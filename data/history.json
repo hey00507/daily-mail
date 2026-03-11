@@ -14,4 +14,8 @@
   "date" : "2026-03-10",
   "module" : "cs-daily",
   "topic" : "Network: REST API"
+}, {
+  "topic" : "DB: 트랜잭션과 ACID",
+  "date" : "2026-03-11",
+  "module" : "cs-daily"
 } ]
