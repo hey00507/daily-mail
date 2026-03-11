@@ -13,8 +13,8 @@ spring:
       mail.smtp.starttls.enable: true
 
 mail:
-  sender: ${MAIL_SENDER:${GMAIL_ADDRESS}}
-  recipient: ${MAIL_RECIPIENT:${GMAIL_ADDRESS}}
+  sender: ${MAIL_SENDER}
+  recipient: ${MAIL_RECIPIENT}
   module: all                       # CLI arg로 오버라이드: --mail.module=news-brief
   modules:
     news-brief:
