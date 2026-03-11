@@ -26,4 +26,8 @@
   "date" : "2026-03-11",
   "module" : "cs-daily",
   "topic" : "Network: 로드밸런싱"
+}, {
+  "date" : "2026-03-11",
+  "module" : "cs-daily",
+  "topic" : "DB: 레플리케이션"
 } ]
