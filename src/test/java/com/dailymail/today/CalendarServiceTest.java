@@ -10,21 +10,14 @@ class CalendarServiceTest {
 
     @Test
     void credentials가_비어있으면_빈_리스트() {
-        CalendarService service = new CalendarService("");
+        CalendarService service = new CalendarService("", "", "");
         List<CalendarService.CalendarEvent> events = service.getTodayEvents();
         assertThat(events).isEmpty();
     }
 
     @Test
-    void credentials가_null이면_빈_리스트() {
-        CalendarService service = new CalendarService(null);
-        List<CalendarService.CalendarEvent> events = service.getTodayEvents();
-        assertThat(events).isEmpty();
-    }
-
-    @Test
-    void 잘못된_credentials면_빈_리스트_반환() {
-        CalendarService service = new CalendarService("aW52YWxpZA=="); // "invalid" in base64
+    void credentials가_일부만_있으면_빈_리스트() {
+        CalendarService service = new CalendarService("client-id", "", "");
         List<CalendarService.CalendarEvent> events = service.getTodayEvents();
         assertThat(events).isEmpty();
     }

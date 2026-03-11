@@ -5,7 +5,6 @@ import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,7 +14,6 @@ import org.thymeleaf.context.Context;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -32,8 +30,9 @@ class MailServiceTest {
     @Mock
     MailConfig mailConfig;
 
-    @InjectMocks
-    MailService mailService;
+    private MailService createMailService() {
+        return new MailService(mailSender, templateEngine, mailConfig, "test-sender@gmail.com");
+    }
 
     @Test
     void send_정상발송() {
@@ -43,6 +42,7 @@ class MailServiceTest {
         when(templateEngine.process(eq("cs-daily"), any(Context.class)))
                 .thenReturn("<html>테스트</html>");
 
+        var mailService = createMailService();
         var content = new MailContent("[CS] 테스트", "cs-daily", Map.of("key", "value"));
         mailService.send(content);
 
@@ -59,6 +59,7 @@ class MailServiceTest {
         when(templateEngine.process(eq("cs-daily"), contextCaptor.capture()))
                 .thenReturn("<html></html>");
 
+        var mailService = createMailService();
         var content = new MailContent("[CS] 테스트", "cs-daily",
                 Map.of("category", "OS", "topic", "데드락"));
         mailService.send(content);

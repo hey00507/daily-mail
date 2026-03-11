@@ -19,17 +19,23 @@ import java.util.Map;
 public class RssService {
 
     private static final Map<String, List<RssFeed>> FEEDS = Map.of(
-            "tech", List.of(
-                    new RssFeed("Hacker News", "https://hnrss.org/frontpage?count=10"),
-                    new RssFeed("GeekNews", "https://news.hada.io/rss"),
-                    new RssFeed("TechCrunch", "https://techcrunch.com/feed/"),
-                    new RssFeed("The Verge", "https://www.theverge.com/rss/index.xml")
+            "정치", List.of(
+                    new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/politics/?outputType=xml"),
+                    new RssFeed("중앙일보", "https://rss.joins.com/joins_politics_list.xml"),
+                    new RssFeed("동아일보", "https://rss.donga.com/politics.xml"),
+                    new RssFeed("한국경제", "https://www.hankyung.com/feed/politics")
             ),
-            "general", List.of(
-                    new RssFeed("조선비즈", "https://biz.chosun.com/rss/allArticle.xml"),
-                    new RssFeed("한국경제", "https://www.hankyung.com/feed/all-news"),
-                    new RssFeed("매일경제", "https://www.mk.co.kr/rss/30000001/"),
-                    new RssFeed("연합뉴스", "https://www.yna.co.kr/rss/news.xml")
+            "경제", List.of(
+                    new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/economy/?outputType=xml"),
+                    new RssFeed("중앙일보", "https://rss.joins.com/joins_money_list.xml"),
+                    new RssFeed("동아일보", "https://rss.donga.com/economy.xml"),
+                    new RssFeed("한국경제", "https://www.hankyung.com/feed/economy")
+            ),
+            "IT", List.of(
+                    new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/economy/tech/?outputType=xml"),
+                    new RssFeed("중앙일보", "https://rss.joins.com/joins_it_list.xml"),
+                    new RssFeed("동아일보", "https://rss.donga.com/it.xml"),
+                    new RssFeed("한국경제", "https://www.hankyung.com/feed/it")
             )
     );
 
@@ -41,12 +47,8 @@ public class RssService {
                 .build();
     }
 
-    public List<NewsItem> fetchTech(int limit) {
-        return fetchFromCategory("tech", limit);
-    }
-
-    public List<NewsItem> fetchGeneral(int limit) {
-        return fetchFromCategory("general", limit);
+    public List<NewsItem> fetchByCategory(String category, int limit) {
+        return fetchFromCategory(category, limit);
     }
 
     private List<NewsItem> fetchFromCategory(String category, int limit) {

@@ -34,26 +34,29 @@ public class NewsBriefMail implements MailModule {
         return config != null && config.enabled();
     }
 
+    private static final List<String> CATEGORIES = List.of("정치", "경제", "IT");
+
     @Override
     public MailContent generate() {
         log.info("뉴스 수집 시작");
 
-        List<RssService.NewsItem> techNews = rssService.fetchTech(5);
-        List<RssService.NewsItem> generalNews = rssService.fetchGeneral(5);
+        Map<String, List<SummarizedNews>> newsMap = new java.util.LinkedHashMap<>();
+        int total = 0;
 
-        log.info("수집 완료 — tech: {}건, general: {}건", techNews.size(), generalNews.size());
-
-        List<SummarizedNews> techSummaries = summarize(techNews, "tech");
-        List<SummarizedNews> generalSummaries = summarize(generalNews, "시사/경제");
+        for (String category : CATEGORIES) {
+            List<RssService.NewsItem> items = rssService.fetchByCategory(category, 5);
+            log.info("[{}] 수집: {}건", category, items.size());
+            List<SummarizedNews> summaries = summarize(items, category);
+            newsMap.put(category, summaries);
+            total += summaries.size();
+        }
 
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MM/dd"));
-        String subject = String.format("[News] %s — 뉴스 %d선",
-                today, techSummaries.size() + generalSummaries.size());
+        String subject = String.format("[News] %s — 뉴스 %d선", today, total);
 
         return new MailContent(subject, "news-brief", Map.of(
                 "date", today,
-                "techNews", techSummaries,
-                "generalNews", generalSummaries
+                "newsMap", newsMap
         ));
     }
 

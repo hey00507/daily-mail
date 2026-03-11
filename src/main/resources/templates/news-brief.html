@@ -76,23 +76,12 @@
 <body>
     <div class="header">
         <h1 th:text="'News Brief — ' + ${date}">News Brief</h1>
-        <div class="meta">Tech + 시사/경제 뉴스 요약</div>
+        <div class="meta">정치 / 경제 / IT 뉴스 요약 — 조선·중앙·동아·한경</div>
     </div>
 
-    <div class="section">
-        <h2>Tech</h2>
-        <div th:each="news : ${techNews}" class="news-item">
-            <div class="news-title">
-                <a th:href="${news.link}" th:text="${news.title}">제목</a>
-            </div>
-            <div class="news-summary" th:if="${!news.summary.isEmpty()}" th:text="${news.summary}">요약</div>
-            <div class="news-source" th:text="${news.source}">출처</div>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>시사/경제</h2>
-        <div th:each="news : ${generalNews}" class="news-item">
+    <div th:each="entry : ${newsMap}" class="section">
+        <h2 th:text="${entry.key}">카테고리</h2>
+        <div th:each="news : ${entry.value}" class="news-item">
             <div class="news-title">
                 <a th:href="${news.link}" th:text="${news.title}">제목</a>
             </div>

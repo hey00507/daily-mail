@@ -7,19 +7,18 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.UserCredentials;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -29,15 +28,23 @@ public class CalendarService {
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
     private static final List<String> SCOPES = List.of("https://www.googleapis.com/auth/calendar.readonly");
 
-    private final String credentialsBase64;
+    private final String clientId;
+    private final String clientSecret;
+    private final String refreshToken;
 
-    public CalendarService(@Value("${google.calendar.credentials:}") String credentialsBase64) {
-        this.credentialsBase64 = credentialsBase64;
+    public CalendarService(
+            @Value("${google.calendar.client-id:}") String clientId,
+            @Value("${google.calendar.client-secret:}") String clientSecret,
+            @Value("${google.calendar.refresh-token:}") String refreshToken
+    ) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.refreshToken = refreshToken;
     }
 
     public List<CalendarEvent> getTodayEvents() {
-        if (credentialsBase64 == null || credentialsBase64.isBlank()) {
-            log.warn("Google Calendar 인증 정보가 없습니다. GOOGLE_CREDENTIALS를 설정해주세요.");
+        if (clientId.isBlank() || clientSecret.isBlank() || refreshToken.isBlank()) {
+            log.warn("Google Calendar 인증 정보가 없습니다. GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN을 설정해주세요.");
             return List.of();
         }
 
@@ -73,10 +80,12 @@ public class CalendarService {
     }
 
     private Calendar buildCalendarService() throws Exception {
-        byte[] credBytes = Base64.getDecoder().decode(credentialsBase64);
-        GoogleCredentials credentials = GoogleCredentials
-                .fromStream(new ByteArrayInputStream(credBytes))
-                .createScoped(SCOPES);
+        GoogleCredentials credentials = UserCredentials.newBuilder()
+                .setClientId(clientId)
+                .setClientSecret(clientSecret)
+                .setRefreshToken(refreshToken)
+                .build();
+        credentials.refreshIfExpired();
 
         return new Calendar.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
