@@ -48,7 +48,11 @@ public class MailRunner implements CommandLineRunner {
                 MailContent content = module.generate();
                 if (content != null) {
                     mailService.send(content);
-                    discordService.send(content);
+                    try {
+                        discordService.send(content);
+                    } catch (Exception e) {
+                        log.error("[{}] Discord 발송 실패 (메일은 정상 발송)", module.name(), e);
+                    }
                 } else {
                     log.info("[{}] 발송할 콘텐츠 없음 (스킵)", module.name());
                 }
