@@ -92,6 +92,7 @@ com.dailymail
 
 ## 코딩 컨벤션
 
+- **테스트를 위한 프로덕션 코드를 작성하지 않는다.** 테스트 편의를 위해 생성자를 추가하거나, 접근 제어자를 완화(private → package-private)하거나, 프로덕션에서 불필요한 메서드를 만들지 않는다. 테스트가 프로덕션 코드의 설계를 오염시키면 안 된다(꼬리가 몸통을 흔들면 안 된다).
 - 서버를 띄우지 않는다. `web-application-type: none` 유지.
 - 외부 API 호출은 WebClient 사용.
 - 메일 템플릿은 `src/main/resources/templates/`에 Thymeleaf로 작성.

@@ -23,23 +23,21 @@ public class ClaudeService {
 
     public ClaudeService(
             @Value("${claude.api-key}") String apiKey,
-            @Value("${claude.model}") String model
+            @Value("${claude.model}") String model,
+            @Value("${claude.base-url:https://api.anthropic.com}") String baseUrl
     ) {
-        this(WebClient.builder()
+        this.webClient = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)))
-                .baseUrl("https://api.anthropic.com")
+                .baseUrl(baseUrl)
                 .defaultHeader("x-api-key", apiKey)
                 .defaultHeader("anthropic-version", "2023-06-01")
                 .defaultHeader("content-type", "application/json")
-                .build(), model);
-    }
-
-    ClaudeService(WebClient webClient, String model) {
-        this.webClient = webClient;
+                .build();
         this.model = model;
     }
 
+    @SuppressWarnings("unchecked")
     public String ask(String prompt) {
         Map<String, Object> body = Map.of(
                 "model", model,
@@ -72,7 +70,7 @@ public class ClaudeService {
         return (String) content.getFirst().get("text");
     }
 
-    static boolean isTransient(Throwable t) {
+    private static boolean isTransient(Throwable t) {
         if (t instanceof WebClientResponseException e) {
             return e.getStatusCode().is5xxServerError();
         }

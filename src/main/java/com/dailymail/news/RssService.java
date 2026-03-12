@@ -1,17 +1,13 @@
 package com.dailymail.news;
 
-import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.netty.http.client.HttpClient;
-import reactor.util.retry.Retry;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import reactor.util.retry.Retry;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
@@ -21,10 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@Service
 public class RssService {
 
-    private static final Map<String, List<RssFeed>> DEFAULT_FEEDS = Map.of(
+    public static final Map<String, List<RssFeed>> DEFAULT_FEEDS = Map.of(
             "정치", List.of(
                     new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/politics/?outputType=xml"),
                     new RssFeed("중앙일보", "https://rss.joins.com/joins_politics_list.xml"),
@@ -48,28 +43,12 @@ public class RssService {
     private final WebClient webClient;
     private final Map<String, List<RssFeed>> feeds;
 
-    public RssService() {
-        this(WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)))
-                .codecs(config -> config.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
-                .build());
-    }
-
-    RssService(WebClient webClient) {
-        this(webClient, DEFAULT_FEEDS);
-    }
-
-    RssService(WebClient webClient, Map<String, List<RssFeed>> feeds) {
+    public RssService(WebClient webClient, Map<String, List<RssFeed>> feeds) {
         this.webClient = webClient;
         this.feeds = feeds;
     }
 
     public List<NewsItem> fetchByCategory(String category, int limit) {
-        return fetchFromCategory(category, limit);
-    }
-
-    private List<NewsItem> fetchFromCategory(String category, int limit) {
         List<RssFeed> categoryFeeds = feeds.get(category);
         if (categoryFeeds == null) return List.of();
 
@@ -102,7 +81,7 @@ public class RssService {
         return parseRss(xml, feed.name());
     }
 
-    List<NewsItem> parseRss(String xml, String source) {
+    private List<NewsItem> parseRss(String xml, String source) {
         List<NewsItem> items = new ArrayList<>();
         try {
             var factory = DocumentBuilderFactory.newInstance();
@@ -148,7 +127,7 @@ public class RssService {
         return "";
     }
 
-    static boolean isTransient(Throwable t) {
+    private static boolean isTransient(Throwable t) {
         if (t instanceof WebClientResponseException e) {
             return e.getStatusCode().is5xxServerError();
         }

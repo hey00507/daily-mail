@@ -7,7 +7,6 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.io.IOException;
@@ -26,25 +25,12 @@ class ClaudeServiceTest {
     void setUp() throws IOException {
         mockServer = new MockWebServer();
         mockServer.start();
-
-        WebClient webClient = WebClient.builder()
-                .baseUrl(mockServer.url("/").toString())
-                .defaultHeader("x-api-key", "test-key")
-                .defaultHeader("anthropic-version", "2023-06-01")
-                .defaultHeader("content-type", "application/json")
-                .build();
-        claudeService = new ClaudeService(webClient, "claude-haiku-4-5-20251001");
+        claudeService = new ClaudeService("test-key", "claude-haiku-4-5-20251001", mockServer.url("/").toString());
     }
 
     @AfterEach
     void tearDown() throws IOException {
         mockServer.shutdown();
-    }
-
-    @Test
-    void public_생성자로_생성() {
-        ClaudeService service = new ClaudeService("fake-api-key", "test-model");
-        assertThat(service).isNotNull();
     }
 
     @Test
@@ -108,7 +94,6 @@ class ClaudeServiceTest {
 
     @Test
     void ask_null_응답이면_예외() {
-        // 빈 body → bodyToMono가 빈 Map 반환 (content key 없음)
         mockServer.enqueue(new MockResponse()
                 .addHeader("Content-Type", "application/json"));
 
@@ -172,22 +157,5 @@ class ClaudeServiceTest {
         assertThatThrownBy(() -> claudeService.ask("프롬프트"))
                 .isInstanceOf(WebClientResponseException.class);
         assertThat(mockServer.getRequestCount()).isEqualTo(1);
-    }
-
-    @Test
-    void isTransient_5xx이면_true() {
-        var exception = WebClientResponseException.create(500, "Internal Server Error", null, null, null);
-        assertThat(ClaudeService.isTransient(exception)).isTrue();
-    }
-
-    @Test
-    void isTransient_4xx이면_false() {
-        var exception = WebClientResponseException.create(400, "Bad Request", null, null, null);
-        assertThat(ClaudeService.isTransient(exception)).isFalse();
-    }
-
-    @Test
-    void isTransient_기타_예외는_true() {
-        assertThat(ClaudeService.isTransient(new RuntimeException("connection refused"))).isTrue();
     }
 }

@@ -5,6 +5,7 @@ import com.dailymail.news.NewsBriefMail.SummarizedNews;
 import com.dailymail.today.CalendarService.CalendarEvent;
 import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,17 +26,16 @@ public class DiscordService {
     private final WebClient webClient;
     private final DiscordConfig config;
 
-    public DiscordService(DiscordConfig config) {
-        this(config, WebClient.builder()
+    public DiscordService(
+            DiscordConfig config,
+            @Value("${discord.base-url:https://discord.com/api/v10}") String baseUrl
+    ) {
+        this.config = config;
+        this.webClient = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)))
-                .baseUrl("https://discord.com/api/v10")
-                .build());
-    }
-
-    DiscordService(DiscordConfig config, WebClient webClient) {
-        this.config = config;
-        this.webClient = webClient;
+                .baseUrl(baseUrl)
+                .build();
     }
 
     public boolean isEnabled() {
@@ -89,7 +89,7 @@ public class DiscordService {
         }
     }
 
-    String toDiscordMessage(MailContent content) {
+    private String toDiscordMessage(MailContent content) {
         var sb = new StringBuilder();
         sb.append("## ").append(content.subject()).append("\n\n");
 
@@ -150,7 +150,7 @@ public class DiscordService {
         }
     }
 
-    List<String> splitMessage(String message) {
+    private List<String> splitMessage(String message) {
         if (message.length() <= DISCORD_MAX_LENGTH) {
             return List.of(message);
         }

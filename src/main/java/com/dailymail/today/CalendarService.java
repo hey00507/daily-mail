@@ -76,7 +76,7 @@ public class CalendarService {
         }
     }
 
-    List<CalendarEvent> toCalendarEvents(List<Event> items) {
+    private List<CalendarEvent> toCalendarEvents(List<Event> items) {
         List<CalendarEvent> result = new ArrayList<>();
         for (Event event : items) {
             result.add(toCalendarEvent(event));
@@ -84,7 +84,7 @@ public class CalendarService {
         return result;
     }
 
-    CalendarEvent toCalendarEvent(Event event) {
+    private CalendarEvent toCalendarEvent(Event event) {
         boolean allDay = event.getStart().getDateTime() == null;
         String startTime;
         if (allDay) {
@@ -106,7 +106,7 @@ public class CalendarService {
         );
     }
 
-    static DateTime toDateTime(LocalDateTime ldt) {
+    private static DateTime toDateTime(LocalDateTime ldt) {
         long millis = ldt.atZone(KST).toInstant().toEpochMilli();
         return new DateTime(millis);
     }
