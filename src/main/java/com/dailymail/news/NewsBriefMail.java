@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class NewsBriefMail implements MailModule {
     public MailContent generate() {
         log.info("뉴스 수집 시작");
 
-        Map<String, List<SummarizedNews>> newsMap = new java.util.LinkedHashMap<>();
+        Map<String, List<SummarizedNews>> newsMap = new LinkedHashMap<>();
         int total = 0;
 
         for (String category : CATEGORIES) {

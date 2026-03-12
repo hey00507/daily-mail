@@ -44,23 +44,33 @@ public class MailRunner implements CommandLineRunner {
 
         for (MailModule module : targets) {
             try {
-                log.info("[{}] 콘텐츠 생성 시작", module.name());
-                MailContent content = module.generate();
-                if (content != null) {
-                    mailService.send(content);
-                    try {
-                        discordService.send(content);
-                    } catch (DiscordSendException e) {
-                        log.error("[{}] Discord 발송 실패 (메일은 정상 발송): {}", module.name(), e.getMessage());
-                    }
-                } else {
-                    log.info("[{}] 발송할 콘텐츠 없음 (스킵)", module.name());
-                }
+                processModule(module);
             } catch (Exception e) {
                 log.error("[{}] 처리 중 오류 발생", module.name(), e);
             }
         }
 
         log.info("Daily Mail 완료");
+    }
+
+    private void processModule(MailModule module) {
+        log.info("[{}] 콘텐츠 생성 시작", module.name());
+        MailContent content = module.generate();
+
+        if (content == null) {
+            log.info("[{}] 발송할 콘텐츠 없음 (스킵)", module.name());
+            return;
+        }
+
+        mailService.send(content);
+        sendToDiscord(module, content);
+    }
+
+    private void sendToDiscord(MailModule module, MailContent content) {
+        try {
+            discordService.send(content);
+        } catch (DiscordSendException e) {
+            log.error("[{}] Discord 발송 실패 (메일은 정상 발송): {}", module.name(), e.getMessage());
+        }
     }
 }

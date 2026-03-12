@@ -1,7 +1,10 @@
 package com.dailymail.cs;
 
 import com.dailymail.config.MailConfig;
-import com.dailymail.core.*;
+import com.dailymail.core.ClaudeService;
+import com.dailymail.core.HistoryService;
+import com.dailymail.core.MailContent;
+import com.dailymail.core.MailModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.commonmark.parser.Parser;
@@ -10,7 +13,11 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 @Component
