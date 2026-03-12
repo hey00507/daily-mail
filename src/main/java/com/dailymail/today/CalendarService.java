@@ -7,7 +7,6 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 import com.google.auth.http.HttpCredentialsAdapter;
-import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.UserCredentials;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +24,7 @@ import java.util.List;
 @Service
 public class CalendarService {
 
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
-    private static final List<String> SCOPES = List.of("https://www.googleapis.com/auth/calendar.readonly");
+    static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final String clientId;
     private final String clientSecret;
@@ -42,8 +40,12 @@ public class CalendarService {
         this.refreshToken = refreshToken;
     }
 
+    public boolean isConfigured() {
+        return !clientId.isBlank() && !clientSecret.isBlank() && !refreshToken.isBlank();
+    }
+
     public List<CalendarEvent> getTodayEvents() {
-        if (clientId.isBlank() || clientSecret.isBlank() || refreshToken.isBlank()) {
+        if (!isConfigured()) {
             log.warn("Google Calendar 인증 정보가 없습니다. GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN을 설정해주세요.");
             return List.of();
         }
@@ -67,11 +69,7 @@ public class CalendarService {
                 return List.of();
             }
 
-            List<CalendarEvent> result = new ArrayList<>();
-            for (Event event : items) {
-                result.add(toCalendarEvent(event));
-            }
-            return result;
+            return toCalendarEvents(items);
 
         } catch (Exception e) {
             log.error("Google Calendar API 호출 실패", e);
@@ -79,23 +77,15 @@ public class CalendarService {
         }
     }
 
-    private Calendar buildCalendarService() throws Exception {
-        GoogleCredentials credentials = UserCredentials.newBuilder()
-                .setClientId(clientId)
-                .setClientSecret(clientSecret)
-                .setRefreshToken(refreshToken)
-                .build();
-        credentials.refreshIfExpired();
-
-        return new Calendar.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance(),
-                new HttpCredentialsAdapter(credentials))
-                .setApplicationName("daily-mail")
-                .build();
+    List<CalendarEvent> toCalendarEvents(List<Event> items) {
+        List<CalendarEvent> result = new ArrayList<>();
+        for (Event event : items) {
+            result.add(toCalendarEvent(event));
+        }
+        return result;
     }
 
-    private CalendarEvent toCalendarEvent(Event event) {
+    CalendarEvent toCalendarEvent(Event event) {
         boolean allDay = event.getStart().getDateTime() == null;
         String startTime;
         if (allDay) {
@@ -117,7 +107,23 @@ public class CalendarService {
         );
     }
 
-    private DateTime toDateTime(LocalDateTime ldt) {
+    private Calendar buildCalendarService() throws Exception {
+        GoogleCredentials credentials = UserCredentials.newBuilder()
+                .setClientId(clientId)
+                .setClientSecret(clientSecret)
+                .setRefreshToken(refreshToken)
+                .build();
+        credentials.refreshIfExpired();
+
+        return new Calendar.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                GsonFactory.getDefaultInstance(),
+                new HttpCredentialsAdapter(credentials))
+                .setApplicationName("daily-mail")
+                .build();
+    }
+
+    static DateTime toDateTime(LocalDateTime ldt) {
         long millis = ldt.atZone(KST).toInstant().toEpochMilli();
         return new DateTime(millis);
     }
