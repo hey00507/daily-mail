@@ -128,13 +128,66 @@ class ClaudeServiceTest {
     }
 
     @Test
-    void ask_서버_에러_500() {
+    void ask_서버_에러_500_재시도_후에도_실패() {
+        mockServer.enqueue(new MockResponse()
+                .setResponseCode(500)
+                .setBody("{\"error\": \"internal\"}")
+                .addHeader("Content-Type", "application/json"));
         mockServer.enqueue(new MockResponse()
                 .setResponseCode(500)
                 .setBody("{\"error\": \"internal\"}")
                 .addHeader("Content-Type", "application/json"));
 
         assertThatThrownBy(() -> claudeService.ask("프롬프트"))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void ask_500_후_재시도_성공() throws Exception {
+        mockServer.enqueue(new MockResponse()
+                .setResponseCode(500)
+                .setBody("{\"error\": \"internal\"}")
+                .addHeader("Content-Type", "application/json"));
+
+        Map<String, Object> successResponse = Map.of(
+                "content", List.of(Map.of("type", "text", "text", "재시도 성공"))
+        );
+        mockServer.enqueue(new MockResponse()
+                .setBody(new ObjectMapper().writeValueAsString(successResponse))
+                .addHeader("Content-Type", "application/json"));
+
+        String result = claudeService.ask("프롬프트");
+
+        assertThat(result).isEqualTo("재시도 성공");
+        assertThat(mockServer.getRequestCount()).isEqualTo(2);
+    }
+
+    @Test
+    void ask_4xx_에러는_재시도하지_않음() {
+        mockServer.enqueue(new MockResponse()
+                .setResponseCode(400)
+                .setBody("{\"error\": \"bad_request\"}")
+                .addHeader("Content-Type", "application/json"));
+
+        assertThatThrownBy(() -> claudeService.ask("프롬프트"))
                 .isInstanceOf(WebClientResponseException.class);
+        assertThat(mockServer.getRequestCount()).isEqualTo(1);
+    }
+
+    @Test
+    void isTransient_5xx이면_true() {
+        var exception = WebClientResponseException.create(500, "Internal Server Error", null, null, null);
+        assertThat(ClaudeService.isTransient(exception)).isTrue();
+    }
+
+    @Test
+    void isTransient_4xx이면_false() {
+        var exception = WebClientResponseException.create(400, "Bad Request", null, null, null);
+        assertThat(ClaudeService.isTransient(exception)).isFalse();
+    }
+
+    @Test
+    void isTransient_기타_예외는_true() {
+        assertThat(ClaudeService.isTransient(new RuntimeException("connection refused"))).isTrue();
     }
 }

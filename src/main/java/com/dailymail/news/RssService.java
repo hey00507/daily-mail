@@ -1,8 +1,13 @@
 package com.dailymail.news;
 
+import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.netty.http.client.HttpClient;
+import reactor.util.retry.Retry;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -45,6 +50,8 @@ public class RssService {
 
     public RssService() {
         this(WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)))
                 .codecs(config -> config.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
                 .build());
     }
@@ -86,6 +93,8 @@ public class RssService {
                 .uri(feed.url())
                 .retrieve()
                 .bodyToMono(String.class)
+                .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
+                        .filter(RssService::isTransient))
                 .block(Duration.ofSeconds(10));
 
         if (xml == null || xml.isBlank()) return List.of();
@@ -137,6 +146,13 @@ public class RssService {
             return nodes.item(0).getTextContent().trim();
         }
         return "";
+    }
+
+    static boolean isTransient(Throwable t) {
+        if (t instanceof WebClientResponseException e) {
+            return e.getStatusCode().is5xxServerError();
+        }
+        return true;
     }
 
     public record RssFeed(String name, String url) {}

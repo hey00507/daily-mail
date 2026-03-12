@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.io.IOException;
 import java.util.List;
@@ -274,6 +275,8 @@ class RssServiceTest {
 
     @Test
     void fetchByCategory_일부_피드_실패해도_나머지_수집() {
+        // 500은 1회 retry하므로 2개 enqueue
+        mockServer.enqueue(new MockResponse().setResponseCode(500).setBody("Internal Server Error"));
         mockServer.enqueue(new MockResponse().setResponseCode(500).setBody("Internal Server Error"));
         mockServer.enqueue(new MockResponse().setBody(rssResponse("성공 기사")).addHeader("Content-Type", "application/xml"));
 
@@ -333,5 +336,44 @@ class RssServiceTest {
         List<RssService.NewsItem> items = testService.fetchByCategory("테스트", 10);
 
         assertThat(items).isEmpty();
+    }
+
+    @Test
+    void fetchByCategory_500_후_재시도_성공() {
+        mockServer.enqueue(new MockResponse().setResponseCode(500).setBody("error"));
+        mockServer.enqueue(new MockResponse().setBody(rssResponse("재시도 성공")).addHeader("Content-Type", "application/xml"));
+
+        String baseUrl = mockServer.url("/").toString();
+        var testFeeds = Map.of("테스트", List.of(
+                new RssService.RssFeed("소스", baseUrl + "feed")
+        ));
+
+        WebClient webClient = WebClient.builder()
+                .codecs(config -> config.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+                .build();
+        RssService testService = new RssService(webClient, testFeeds);
+
+        List<RssService.NewsItem> items = testService.fetchByCategory("테스트", 10);
+
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).title()).isEqualTo("재시도 성공");
+        assertThat(mockServer.getRequestCount()).isEqualTo(2);
+    }
+
+    @Test
+    void isTransient_5xx이면_true() {
+        var exception = WebClientResponseException.create(500, "Internal Server Error", null, null, null);
+        assertThat(RssService.isTransient(exception)).isTrue();
+    }
+
+    @Test
+    void isTransient_4xx이면_false() {
+        var exception = WebClientResponseException.create(404, "Not Found", null, null, null);
+        assertThat(RssService.isTransient(exception)).isFalse();
+    }
+
+    @Test
+    void isTransient_기타_예외는_true() {
+        assertThat(RssService.isTransient(new RuntimeException("timeout"))).isTrue();
     }
 }

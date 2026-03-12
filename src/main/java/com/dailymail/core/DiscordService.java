@@ -3,12 +3,16 @@ package com.dailymail.core;
 import com.dailymail.config.DiscordConfig;
 import com.dailymail.news.NewsBriefMail.SummarizedNews;
 import com.dailymail.today.CalendarService.CalendarEvent;
+import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +27,8 @@ public class DiscordService {
 
     public DiscordService(DiscordConfig config) {
         this(config, WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)))
                 .baseUrl("https://discord.com/api/v10")
                 .build());
     }
@@ -149,7 +155,7 @@ public class DiscordService {
             return List.of(message);
         }
 
-        var chunks = new java.util.ArrayList<String>();
+        var chunks = new ArrayList<String>();
         int start = 0;
         while (start < message.length()) {
             int end = Math.min(start + DISCORD_MAX_LENGTH, message.length());

@@ -1,10 +1,14 @@
 package com.dailymail.core;
 
+import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.netty.http.client.HttpClient;
+import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.List;
@@ -22,6 +26,8 @@ public class ClaudeService {
             @Value("${claude.model}") String model
     ) {
         this(WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)))
                 .baseUrl("https://api.anthropic.com")
                 .defaultHeader("x-api-key", apiKey)
                 .defaultHeader("anthropic-version", "2023-06-01")
@@ -50,6 +56,8 @@ public class ClaudeService {
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(Map.class)
+                    .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
+                            .filter(ClaudeService::isTransient))
                     .block(Duration.ofSeconds(30));
         } catch (WebClientResponseException e) {
             log.error("Claude API 에러 [{}]: {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -62,5 +70,12 @@ public class ClaudeService {
 
         List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
         return (String) content.getFirst().get("text");
+    }
+
+    static boolean isTransient(Throwable t) {
+        if (t instanceof WebClientResponseException e) {
+            return e.getStatusCode().is5xxServerError();
+        }
+        return true;
     }
 }
