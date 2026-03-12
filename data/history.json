@@ -70,4 +70,8 @@
   "date" : "2026-03-12",
   "topic" : "Java/Spring: JVM 구조와 메모리",
   "module" : "cs-daily"
+}, {
+  "date" : "2026-03-12",
+  "module" : "cs-daily",
+  "topic" : "Java/Spring: 트랜잭션 전파"
 } ]
