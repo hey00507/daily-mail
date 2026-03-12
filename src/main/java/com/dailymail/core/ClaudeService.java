@@ -20,13 +20,17 @@ public class ClaudeService {
             @Value("${claude.api-key}") String apiKey,
             @Value("${claude.model}") String model
     ) {
-        this.model = model;
-        this.webClient = WebClient.builder()
+        this(WebClient.builder()
                 .baseUrl("https://api.anthropic.com")
                 .defaultHeader("x-api-key", apiKey)
                 .defaultHeader("anthropic-version", "2023-06-01")
                 .defaultHeader("content-type", "application/json")
-                .build();
+                .build(), model);
+    }
+
+    ClaudeService(WebClient webClient, String model) {
+        this.webClient = webClient;
+        this.model = model;
     }
 
     public String ask(String prompt) {

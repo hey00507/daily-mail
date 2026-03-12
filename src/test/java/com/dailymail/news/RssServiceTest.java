@@ -1,35 +1,17 @@
 package com.dailymail.news;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RssServiceTest {
 
-    private MockWebServer mockServer;
-
-    @BeforeEach
-    void setUp() throws IOException {
-        mockServer = new MockWebServer();
-        mockServer.start();
-    }
-
-    @AfterEach
-    void tearDown() throws IOException {
-        mockServer.shutdown();
-    }
+    private final RssService service = new RssService();
 
     @Test
-    void parseRss_정상_RSS2_파싱() throws Exception {
+    void parseRss_정상_RSS2_파싱() {
         String rssXml = """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <rss version="2.0">
@@ -48,21 +30,17 @@ class RssServiceTest {
                 </rss>
                 """;
 
-        RssService service = new RssService();
-        var method = RssService.class.getDeclaredMethod("parseRss", String.class, String.class);
-        method.setAccessible(true);
-
-        @SuppressWarnings("unchecked")
-        List<RssService.NewsItem> items = (List<RssService.NewsItem>) method.invoke(service, rssXml, "TestSource");
+        List<RssService.NewsItem> items = service.parseRss(rssXml, "TestSource");
 
         assertThat(items).hasSize(2);
         assertThat(items.get(0).title()).isEqualTo("테스트 기사 1");
         assertThat(items.get(0).link()).isEqualTo("https://example.com/1");
+        assertThat(items.get(0).description()).isEqualTo("기사 내용 1");
         assertThat(items.get(0).source()).isEqualTo("TestSource");
     }
 
     @Test
-    void parseRss_Atom_포맷_파싱() throws Exception {
+    void parseRss_Atom_포맷_파싱() {
         String atomXml = """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -74,19 +52,15 @@ class RssServiceTest {
                 </feed>
                 """;
 
-        RssService service = new RssService();
-        var method = RssService.class.getDeclaredMethod("parseRss", String.class, String.class);
-        method.setAccessible(true);
-
-        @SuppressWarnings("unchecked")
-        List<RssService.NewsItem> items = (List<RssService.NewsItem>) method.invoke(service, atomXml, "AtomSource");
+        List<RssService.NewsItem> items = service.parseRss(atomXml, "AtomSource");
 
         assertThat(items).hasSize(1);
         assertThat(items.get(0).title()).isEqualTo("Atom 기사");
+        assertThat(items.get(0).link()).isEqualTo("https://example.com/atom");
     }
 
     @Test
-    void parseRss_최대_5개만_파싱() throws Exception {
+    void parseRss_최대_5개만_파싱() {
         StringBuilder xml = new StringBuilder("""
                 <?xml version="1.0" encoding="UTF-8"?>
                 <rss version="2.0"><channel>
@@ -96,26 +70,49 @@ class RssServiceTest {
         }
         xml.append("</channel></rss>");
 
-        RssService service = new RssService();
-        var method = RssService.class.getDeclaredMethod("parseRss", String.class, String.class);
-        method.setAccessible(true);
-
-        @SuppressWarnings("unchecked")
-        List<RssService.NewsItem> items = (List<RssService.NewsItem>) method.invoke(service, xml.toString(), "Test");
+        List<RssService.NewsItem> items = service.parseRss(xml.toString(), "Test");
 
         assertThat(items).hasSize(5);
     }
 
     @Test
-    void parseRss_잘못된_XML이면_빈_리스트() throws Exception {
-        RssService service = new RssService();
-        var method = RssService.class.getDeclaredMethod("parseRss", String.class, String.class);
-        method.setAccessible(true);
-
-        @SuppressWarnings("unchecked")
-        List<RssService.NewsItem> items = (List<RssService.NewsItem>) method.invoke(service, "not xml", "Test");
+    void parseRss_잘못된_XML이면_빈_리스트() {
+        List<RssService.NewsItem> items = service.parseRss("not xml", "Test");
 
         assertThat(items).isEmpty();
+    }
+
+    @Test
+    void parseRss_빈_XML이면_빈_리스트() {
+        List<RssService.NewsItem> items = service.parseRss("", "Test");
+
+        assertThat(items).isEmpty();
+    }
+
+    @Test
+    void parseRss_제목_없는_항목은_스킵() {
+        String rssXml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <rss version="2.0">
+                  <channel>
+                    <item>
+                      <title></title>
+                      <link>https://example.com/1</link>
+                      <description>내용</description>
+                    </item>
+                    <item>
+                      <title>유효한 기사</title>
+                      <link>https://example.com/2</link>
+                      <description>내용</description>
+                    </item>
+                  </channel>
+                </rss>
+                """;
+
+        List<RssService.NewsItem> items = service.parseRss(rssXml, "Test");
+
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).title()).isEqualTo("유효한 기사");
     }
 
     @Test
@@ -125,5 +122,11 @@ class RssServiceTest {
         assertThat(item.link()).isEqualTo("https://link.com");
         assertThat(item.description()).isEqualTo("설명");
         assertThat(item.source()).isEqualTo("출처");
+    }
+
+    @Test
+    void fetchByCategory_존재하지_않는_카테고리면_빈_리스트() {
+        List<RssService.NewsItem> items = service.fetchByCategory("존재하지않는카테고리", 5);
+        assertThat(items).isEmpty();
     }
 }

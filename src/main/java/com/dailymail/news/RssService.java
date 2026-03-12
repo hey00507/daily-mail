@@ -82,7 +82,7 @@ public class RssService {
         return parseRss(xml, feed.name());
     }
 
-    private List<NewsItem> parseRss(String xml, String source) {
+    List<NewsItem> parseRss(String xml, String source) {
         List<NewsItem> items = new ArrayList<>();
         try {
             var factory = DocumentBuilderFactory.newInstance();

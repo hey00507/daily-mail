@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 
 class MailRunnerTest {
 
@@ -68,6 +69,39 @@ class MailRunnerTest {
         verify(today).generate();
         verify(mailService, never()).send(any());
         verify(discordService, never()).send(any());
+    }
+
+    @Test
+    void Discord_실패해도_메일은_정상_발송() {
+        MailModule cs = mockModule("cs-daily", true,
+                new MailContent("[CS] 테스트", "cs-daily", Map.of()));
+        MailService mailService = mock(MailService.class);
+        DiscordService discordService = mock(DiscordService.class);
+        doThrow(new DiscordSendException("Discord 에러", 404, new RuntimeException()))
+                .when(discordService).send(any(MailContent.class));
+
+        MailRunner runner = new MailRunner(List.of(cs), mailService, discordService, "all");
+        runner.run();
+
+        verify(mailService, times(1)).send(any(MailContent.class));
+        verify(discordService, times(1)).send(any(MailContent.class));
+    }
+
+    @Test
+    void Discord_실패해도_다음_모듈_계속_실행() {
+        MailModule cs = mockModule("cs-daily", true,
+                new MailContent("[CS] 테스트", "cs-daily", Map.of()));
+        MailModule news = mockModule("news-brief", true,
+                new MailContent("[News] 테스트", "news-brief", Map.of()));
+        MailService mailService = mock(MailService.class);
+        DiscordService discordService = mock(DiscordService.class);
+        doThrow(new DiscordSendException("Discord 에러", 500, new RuntimeException()))
+                .when(discordService).send(any(MailContent.class));
+
+        MailRunner runner = new MailRunner(List.of(cs, news), mailService, discordService, "all");
+        runner.run();
+
+        verify(mailService, times(2)).send(any(MailContent.class));
     }
 
     @Test

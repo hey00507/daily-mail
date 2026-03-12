@@ -76,7 +76,7 @@ public class DiscordService {
         }
     }
 
-    private String toDiscordMessage(MailContent content) {
+    String toDiscordMessage(MailContent content) {
         var sb = new StringBuilder();
         sb.append("## ").append(content.subject()).append("\n\n");
 
@@ -164,7 +164,7 @@ public class DiscordService {
         }
     }
 
-    private List<String> splitMessage(String message) {
+    List<String> splitMessage(String message) {
         if (message.length() <= DISCORD_MAX_LENGTH) {
             return List.of(message);
         }
