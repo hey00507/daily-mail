@@ -37,6 +37,9 @@ claude:
 discord:
   bot-token: ${DISCORD_BOT_TOKEN:}
   channel-id: ${DISCORD_CHANNEL_ID:}
+  channels:
+    cs-daily: ${DISCORD_CHANNEL_CS:}
+    news-brief: ${DISCORD_CHANNEL_NEWS:}
 
 google:
   calendar:

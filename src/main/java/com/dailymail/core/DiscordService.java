@@ -1,10 +1,9 @@
 package com.dailymail.core;
 
+import com.dailymail.config.DiscordConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
@@ -17,22 +16,22 @@ public class DiscordService {
     private static final int DISCORD_MAX_LENGTH = 2000;
 
     private final WebClient webClient;
-    private final String botToken;
-    private final String channelId;
+    private final DiscordConfig config;
 
-    public DiscordService(
-            @Value("${discord.bot-token:}") String botToken,
-            @Value("${discord.channel-id:}") String channelId
-    ) {
-        this.botToken = botToken;
-        this.channelId = channelId;
+    public DiscordService(DiscordConfig config) {
+        this.config = config;
         this.webClient = WebClient.builder()
                 .baseUrl("https://discord.com/api/v10")
                 .build();
     }
 
     public boolean isEnabled() {
-        return !botToken.isBlank() && !channelId.isBlank();
+        return !config.botToken().isBlank() && !config.channelId().isBlank();
+    }
+
+    private String resolveChannelId(String template) {
+        String channelId = config.channels().get(template);
+        return (channelId != null && !channelId.isBlank()) ? channelId : config.channelId();
     }
 
     private static final List<String> DISCORD_TEMPLATES = List.of("news-brief", "cs-daily");
@@ -49,13 +48,14 @@ public class DiscordService {
         }
 
         try {
+            String targetChannelId = resolveChannelId(content.template());
             String message = toDiscordMessage(content);
             List<String> chunks = splitMessage(message);
 
             for (String chunk : chunks) {
                 webClient.post()
-                        .uri("/channels/{channelId}/messages", channelId)
-                        .header("Authorization", "Bot " + botToken)
+                        .uri("/channels/{channelId}/messages", targetChannelId)
+                        .header("Authorization", "Bot " + config.botToken())
                         .header("Content-Type", "application/json")
                         .bodyValue(Map.of("content", chunk))
                         .retrieve()
