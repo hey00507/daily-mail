@@ -10,11 +10,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +55,14 @@ class CsDailyMailTest {
     }
 
     @Test
+    void isEnabled_설정이_false면_비활성화() {
+        var moduleConfig = new MailConfig.ModuleConfig(false, null, null, false);
+        when(mailConfig.modules()).thenReturn(Map.of("cs-daily", moduleConfig));
+
+        assertThat(csDailyMail.isEnabled()).isFalse();
+    }
+
+    @Test
     void generate_정상_콘텐츠_생성() {
         when(historyService.getSentTopics("cs-daily")).thenReturn(List.of());
         when(claudeService.ask(anyString())).thenReturn("## 면접 질문\n테스트 응답");
@@ -72,7 +82,6 @@ class CsDailyMailTest {
 
     @Test
     void generate_이미_보낸_주제는_제외() {
-        // OS 카테고리의 첫 번째 주제를 이미 보낸 것으로 설정
         when(historyService.getSentTopics("cs-daily"))
                 .thenReturn(List.of("OS: 프로세스 vs 스레드"));
         when(claudeService.ask(anyString())).thenReturn("응답");
@@ -80,7 +89,6 @@ class CsDailyMailTest {
         MailContent content = csDailyMail.generate();
 
         assertThat(content).isNotNull();
-        // 보낸 주제가 아닌 다른 주제가 선택되어야 함
         verify(historyService).append(eq("cs-daily"), anyString());
     }
 
@@ -98,5 +106,26 @@ class CsDailyMailTest {
         assertThat(prompt).contains("주제:");
         assertThat(prompt).contains("면접");
         assertThat(prompt).contains("마크다운");
+    }
+
+    @Test
+    void generate_모든_주제_소진시_리셋하여_재선택() {
+        // 모든 토픽을 "이미 보낸 것"으로 설정
+        List<String> allTopics = new ArrayList<>();
+        for (var entry : CsDailyMail.CATEGORIES.entrySet()) {
+            for (String topic : entry.getValue()) {
+                allTopics.add(entry.getKey() + ": " + topic);
+            }
+        }
+
+        when(historyService.getSentTopics("cs-daily")).thenReturn(allTopics);
+        when(claudeService.ask(anyString())).thenReturn("## 면접 질문\n리셋 후 응답");
+
+        MailContent content = csDailyMail.generate();
+
+        assertThat(content).isNotNull();
+        assertThat(content.subject()).contains("[CS]");
+        // 리셋 후에도 정상적으로 주제를 선택하고 콘텐츠를 생성
+        verify(historyService).append(eq("cs-daily"), anyString());
     }
 }

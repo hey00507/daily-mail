@@ -47,6 +47,14 @@ class TodayBriefMailTest {
     }
 
     @Test
+    void isEnabled_설정이_false면_비활성화() {
+        var config = new MailConfig.ModuleConfig(false, null, null, false);
+        when(mailConfig.modules()).thenReturn(Map.of("today-brief", config));
+
+        assertThat(todayBriefMail.isEnabled()).isFalse();
+    }
+
+    @Test
     void generate_일정이_있으면_콘텐츠_반환() {
         var event = new CalendarService.CalendarEvent("팀 미팅", "10:00", false, "회의실", null);
         when(calendarService.getTodayEvents()).thenReturn(List.of(event));
@@ -87,6 +95,17 @@ class TodayBriefMailTest {
         assertThat(content).isNotNull();
         assertThat(content.subject()).contains("일정 없음");
         assertThat((Boolean) content.variables().get("hasEvents")).isFalse();
+    }
+
+    @Test
+    void generate_일정없고_config_없으면_빈일정_메일발송() {
+        when(calendarService.getTodayEvents()).thenReturn(List.of());
+        when(mailConfig.modules()).thenReturn(Map.of());
+
+        MailContent content = todayBriefMail.generate();
+
+        assertThat(content).isNotNull();
+        assertThat(content.subject()).contains("일정 없음");
     }
 
     @Test

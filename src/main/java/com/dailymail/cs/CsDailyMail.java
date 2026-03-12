@@ -17,7 +17,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CsDailyMail implements MailModule {
 
-    private static final Map<String, List<String>> CATEGORIES = new LinkedHashMap<>();
+    static final Map<String, List<String>> CATEGORIES = new LinkedHashMap<>();
 
     static {
         CATEGORIES.put("OS", List.of(

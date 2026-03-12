@@ -72,20 +72,20 @@ class MailServiceTest {
     }
 
     @Test
-    void send_MessagingException_발생시_RuntimeException() {
+    void send_MessagingException_발생시_RuntimeException() throws Exception {
         MimeMessage mimeMessage = mock(MimeMessage.class);
+        doThrow(new MessagingException("setFrom 실패"))
+                .when(mimeMessage).setFrom(any(jakarta.mail.Address.class));
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
-        when(mailConfig.recipient()).thenReturn("test@gmail.com");
         when(templateEngine.process(eq("cs-daily"), any(Context.class)))
                 .thenReturn("<html></html>");
-        doThrow(new org.springframework.mail.MailSendException("SMTP 에러"))
-                .when(mailSender).send(any(MimeMessage.class));
 
         var mailService = createMailService();
         var content = new MailContent("[CS] 테스트", "cs-daily", Map.of());
 
         assertThatThrownBy(() -> mailService.send(content))
-                .isInstanceOf(Exception.class);
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("메일 발송 실패");
     }
 
     @Test

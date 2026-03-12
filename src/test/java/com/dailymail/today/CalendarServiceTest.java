@@ -1,8 +1,10 @@
 package com.dailymail.today;
 
 import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.Events;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -11,6 +13,10 @@ import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CalendarServiceTest {
 
@@ -18,19 +24,25 @@ class CalendarServiceTest {
 
     @Test
     void credentials가_비어있으면_미설정() {
-        CalendarService service = new CalendarService("", "", "");
+        CalendarService service = new CalendarService("", "", "", () -> null);
         assertThat(service.isConfigured()).isFalse();
     }
 
     @Test
-    void credentials가_일부만_있으면_미설정() {
-        CalendarService service = new CalendarService("client-id", "", "");
+    void credentials가_clientSecret만_비어있으면_미설정() {
+        CalendarService service = new CalendarService("client-id", "", "token", () -> null);
+        assertThat(service.isConfigured()).isFalse();
+    }
+
+    @Test
+    void credentials가_refreshToken만_비어있으면_미설정() {
+        CalendarService service = new CalendarService("client-id", "secret", "", () -> null);
         assertThat(service.isConfigured()).isFalse();
     }
 
     @Test
     void credentials가_모두_있으면_설정됨() {
-        CalendarService service = new CalendarService("id", "secret", "token");
+        CalendarService service = new CalendarService("id", "secret", "token", () -> null);
         assertThat(service.isConfigured()).isTrue();
     }
 
@@ -38,18 +50,101 @@ class CalendarServiceTest {
 
     @Test
     void 미설정이면_빈_리스트() {
-        CalendarService service = new CalendarService("", "", "");
+        CalendarService service = new CalendarService("", "", "", () -> null);
         List<CalendarService.CalendarEvent> events = service.getTodayEvents();
         assertThat(events).isEmpty();
+    }
+
+    // --- getTodayEvents (mock Calendar) ---
+
+    @Test
+    void getTodayEvents_일정_있는_경우() throws Exception {
+        Calendar mockCalendar = mock(Calendar.class, RETURNS_DEEP_STUBS);
+
+        long millis = LocalDate.now(CalendarService.KST).atTime(10, 0)
+                .atZone(CalendarService.KST).toInstant().toEpochMilli();
+
+        Events events = new Events().setItems(List.of(
+                new Event()
+                        .setSummary("팀 미팅")
+                        .setLocation("회의실")
+                        .setStart(new EventDateTime().setDateTime(new DateTime(millis)))
+        ));
+
+        when(mockCalendar.events().list(anyString())
+                .setTimeMin(org.mockito.ArgumentMatchers.any())
+                .setTimeMax(org.mockito.ArgumentMatchers.any())
+                .setOrderBy(anyString())
+                .setSingleEvents(true)
+                .execute()
+        ).thenReturn(events);
+
+        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        List<CalendarService.CalendarEvent> result = service.getTodayEvents();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).title()).isEqualTo("팀 미팅");
+        assertThat(result.get(0).startTime()).isEqualTo("10:00");
+        assertThat(result.get(0).location()).isEqualTo("회의실");
+    }
+
+    @Test
+    void getTodayEvents_일정_없는_경우() throws Exception {
+        Calendar mockCalendar = mock(Calendar.class, RETURNS_DEEP_STUBS);
+
+        Events events = new Events().setItems(List.of());
+
+        when(mockCalendar.events().list(anyString())
+                .setTimeMin(org.mockito.ArgumentMatchers.any())
+                .setTimeMax(org.mockito.ArgumentMatchers.any())
+                .setOrderBy(anyString())
+                .setSingleEvents(true)
+                .execute()
+        ).thenReturn(events);
+
+        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        List<CalendarService.CalendarEvent> result = service.getTodayEvents();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getTodayEvents_items_null인_경우() throws Exception {
+        Calendar mockCalendar = mock(Calendar.class, RETURNS_DEEP_STUBS);
+
+        Events events = new Events();
+
+        when(mockCalendar.events().list(anyString())
+                .setTimeMin(org.mockito.ArgumentMatchers.any())
+                .setTimeMax(org.mockito.ArgumentMatchers.any())
+                .setOrderBy(anyString())
+                .setSingleEvents(true)
+                .execute()
+        ).thenReturn(events);
+
+        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        List<CalendarService.CalendarEvent> result = service.getTodayEvents();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getTodayEvents_API_예외시_빈_리스트() {
+        CalendarService service = new CalendarService("id", "secret", "token", () -> {
+            throw new RuntimeException("API 오류");
+        });
+
+        List<CalendarService.CalendarEvent> result = service.getTodayEvents();
+
+        assertThat(result).isEmpty();
     }
 
     // --- toCalendarEvent (단위 테스트) ---
 
     @Test
     void toCalendarEvent_시간_이벤트_변환() {
-        CalendarService service = new CalendarService("", "", "");
+        CalendarService service = new CalendarService("", "", "", () -> null);
 
-        // KST 10:30에 해당하는 밀리초
         LocalDateTime kst1030 = LocalDate.now().atTime(10, 30);
         long millis = kst1030.atZone(CalendarService.KST).toInstant().toEpochMilli();
 
@@ -70,7 +165,7 @@ class CalendarServiceTest {
 
     @Test
     void toCalendarEvent_종일_이벤트_변환() {
-        CalendarService service = new CalendarService("", "", "");
+        CalendarService service = new CalendarService("", "", "", () -> null);
 
         Event googleEvent = new Event()
                 .setSummary("공휴일")
@@ -86,7 +181,7 @@ class CalendarServiceTest {
 
     @Test
     void toCalendarEvent_제목_없으면_기본값() {
-        CalendarService service = new CalendarService("", "", "");
+        CalendarService service = new CalendarService("", "", "", () -> null);
 
         Event googleEvent = new Event()
                 .setStart(new EventDateTime().setDate(new DateTime("2026-03-12")));
@@ -98,7 +193,7 @@ class CalendarServiceTest {
 
     @Test
     void toCalendarEvent_위치_없는_이벤트() {
-        CalendarService service = new CalendarService("", "", "");
+        CalendarService service = new CalendarService("", "", "", () -> null);
 
         long millis = LocalDate.now().atTime(14, 0)
                 .atZone(CalendarService.KST).toInstant().toEpochMilli();
@@ -118,7 +213,7 @@ class CalendarServiceTest {
 
     @Test
     void toCalendarEvents_여러_이벤트_변환() {
-        CalendarService service = new CalendarService("", "", "");
+        CalendarService service = new CalendarService("", "", "", () -> null);
 
         long millis1 = LocalDate.now().atTime(9, 0)
                 .atZone(CalendarService.KST).toInstant().toEpochMilli();

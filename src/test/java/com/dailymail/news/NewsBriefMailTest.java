@@ -53,6 +53,14 @@ class NewsBriefMailTest {
     }
 
     @Test
+    void isEnabled_설정이_false면_비활성화() {
+        var moduleConfig = new MailConfig.ModuleConfig(false, null, null, false);
+        when(mailConfig.modules()).thenReturn(Map.of("news-brief", moduleConfig));
+
+        assertThat(newsBriefMail.isEnabled()).isFalse();
+    }
+
+    @Test
     void generate_정상_콘텐츠_생성() {
         var politicsItem = new RssService.NewsItem("정치 기사", "https://pol.com", "정치 내용", "조선일보");
         var econItem = new RssService.NewsItem("경제 기사", "https://econ.com", "경제 내용", "한국경제");

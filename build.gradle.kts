@@ -57,6 +57,14 @@ tasks.jacocoTestReport {
 		xml.required = true
 		html.required = true
 	}
+	classDirectories.setFrom(files(classDirectories.files.map {
+		fileTree(it) {
+			exclude(
+				"com/dailymail/DailyMailApplication.class",
+				"com/dailymail/today/GoogleCalendarClientFactory.class"
+			)
+		}
+	}))
 }
 
 tasks.jacocoTestCoverageVerification {

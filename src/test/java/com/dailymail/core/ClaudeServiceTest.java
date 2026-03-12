@@ -42,6 +42,12 @@ class ClaudeServiceTest {
     }
 
     @Test
+    void public_생성자로_생성() {
+        ClaudeService service = new ClaudeService("fake-api-key", "test-model");
+        assertThat(service).isNotNull();
+    }
+
+    @Test
     void ask_정상응답_파싱() throws Exception {
         Map<String, Object> response = Map.of(
                 "content", List.of(Map.of("type", "text", "text", "테스트 응답입니다.")),
@@ -91,9 +97,19 @@ class ClaudeServiceTest {
     }
 
     @Test
-    void ask_null_응답이면_예외() {
+    void ask_빈_객체_응답이면_예외() {
         mockServer.enqueue(new MockResponse()
                 .setBody("{}")
+                .addHeader("Content-Type", "application/json"));
+
+        assertThatThrownBy(() -> claudeService.ask("프롬프트"))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void ask_null_응답이면_예외() {
+        // 빈 body → bodyToMono가 빈 Map 반환 (content key 없음)
+        mockServer.enqueue(new MockResponse()
                 .addHeader("Content-Type", "application/json"));
 
         assertThatThrownBy(() -> claudeService.ask("프롬프트"))

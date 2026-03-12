@@ -18,7 +18,7 @@ import java.util.Map;
 @Service
 public class RssService {
 
-    private static final Map<String, List<RssFeed>> FEEDS = Map.of(
+    private static final Map<String, List<RssFeed>> DEFAULT_FEEDS = Map.of(
             "정치", List.of(
                     new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/politics/?outputType=xml"),
                     new RssFeed("중앙일보", "https://rss.joins.com/joins_politics_list.xml"),
@@ -40,11 +40,21 @@ public class RssService {
     );
 
     private final WebClient webClient;
+    private final Map<String, List<RssFeed>> feeds;
 
     public RssService() {
-        this.webClient = WebClient.builder()
+        this(WebClient.builder()
                 .codecs(config -> config.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
-                .build();
+                .build());
+    }
+
+    RssService(WebClient webClient) {
+        this(webClient, DEFAULT_FEEDS);
+    }
+
+    RssService(WebClient webClient, Map<String, List<RssFeed>> feeds) {
+        this.webClient = webClient;
+        this.feeds = feeds;
     }
 
     public List<NewsItem> fetchByCategory(String category, int limit) {
@@ -52,11 +62,11 @@ public class RssService {
     }
 
     private List<NewsItem> fetchFromCategory(String category, int limit) {
-        List<RssFeed> feeds = FEEDS.get(category);
-        if (feeds == null) return List.of();
+        List<RssFeed> categoryFeeds = feeds.get(category);
+        if (categoryFeeds == null) return List.of();
 
         List<NewsItem> allItems = new ArrayList<>();
-        for (RssFeed feed : feeds) {
+        for (RssFeed feed : categoryFeeds) {
             try {
                 List<NewsItem> items = fetchFeed(feed);
                 allItems.addAll(items);
@@ -122,7 +132,7 @@ public class RssService {
 
     private String getTagText(Element parent, String tag) {
         NodeList nodes = parent.getElementsByTagName(tag);
-        if (nodes.getLength() > 0 && nodes.item(0).getTextContent() != null) {
+        if (nodes.getLength() > 0) {
             return nodes.item(0).getTextContent().trim();
         }
         return "";

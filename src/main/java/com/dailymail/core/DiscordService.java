@@ -1,6 +1,8 @@
 package com.dailymail.core;
 
 import com.dailymail.config.DiscordConfig;
+import com.dailymail.news.NewsBriefMail.SummarizedNews;
+import com.dailymail.today.CalendarService.CalendarEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,10 +21,14 @@ public class DiscordService {
     private final DiscordConfig config;
 
     public DiscordService(DiscordConfig config) {
-        this.config = config;
-        this.webClient = WebClient.builder()
+        this(config, WebClient.builder()
                 .baseUrl("https://discord.com/api/v10")
-                .build();
+                .build());
+    }
+
+    DiscordService(DiscordConfig config, WebClient webClient) {
+        this.config = config;
+        this.webClient = webClient;
     }
 
     public boolean isEnabled() {
@@ -94,27 +100,18 @@ public class DiscordService {
 
     @SuppressWarnings("unchecked")
     private void formatNewsBrief(StringBuilder sb, Map<String, Object> variables) {
-        var newsMap = (Map<String, List<?>>) variables.get("newsMap");
+        var newsMap = (Map<String, List<SummarizedNews>>) variables.get("newsMap");
         if (newsMap == null) return;
 
         for (var entry : newsMap.entrySet()) {
             sb.append("### ").append(entry.getKey()).append("\n");
             int i = 1;
-            for (var item : entry.getValue()) {
-                try {
-                    var title = getField(item, "title");
-                    var summary = getField(item, "summary");
-                    var link = getField(item, "link");
-                    var source = getField(item, "source");
-
-                    sb.append(i++).append(". **").append(title).append("**");
-                    if (!summary.isEmpty()) sb.append(" — ").append(summary);
-                    sb.append(" (").append(source).append(")");
-                    if (!link.isEmpty()) sb.append("\n   ").append(link);
-                    sb.append("\n");
-                } catch (Exception e) {
-                    log.warn("뉴스 항목 포맷 실패", e);
-                }
+            for (SummarizedNews news : entry.getValue()) {
+                sb.append(i++).append(". **").append(news.title()).append("**");
+                if (!news.summary().isEmpty()) sb.append(" — ").append(news.summary());
+                sb.append(" (").append(news.source()).append(")");
+                if (!news.link().isEmpty()) sb.append("\n   ").append(news.link());
+                sb.append("\n");
             }
             sb.append("\n");
         }
@@ -129,7 +126,7 @@ public class DiscordService {
 
     @SuppressWarnings("unchecked")
     private void formatTodayBrief(StringBuilder sb, Map<String, Object> variables) {
-        var events = (List<?>) variables.get("events");
+        var events = (List<CalendarEvent>) variables.get("events");
         var hasEvents = (Boolean) variables.getOrDefault("hasEvents", false);
 
         if (!hasEvents || events == null || events.isEmpty()) {
@@ -137,30 +134,12 @@ public class DiscordService {
             return;
         }
 
-        for (var event : events) {
-            try {
-                var title = getField(event, "title");
-                var startTime = getField(event, "startTime");
-                var location = getField(event, "location");
-
-                sb.append("- **").append(startTime).append("** ").append(title);
-                if (location != null && !location.isEmpty()) {
-                    sb.append(" (").append(location).append(")");
-                }
-                sb.append("\n");
-            } catch (Exception e) {
-                log.warn("일정 항목 포맷 실패", e);
+        for (CalendarEvent event : events) {
+            sb.append("- **").append(event.startTime()).append("** ").append(event.title());
+            if (event.location() != null && !event.location().isEmpty()) {
+                sb.append(" (").append(event.location()).append(")");
             }
-        }
-    }
-
-    private String getField(Object obj, String fieldName) {
-        try {
-            var method = obj.getClass().getMethod(fieldName);
-            var result = method.invoke(obj);
-            return result != null ? result.toString() : "";
-        } catch (Exception e) {
-            return "";
+            sb.append("\n");
         }
     }
 
