@@ -58,4 +58,8 @@
   "topic" : "DB: 쿼리 최적화",
   "date" : "2026-03-12",
   "module" : "cs-daily"
+}, {
+  "topic" : "OS: 동기화와 뮤텍스/세마포어",
+  "date" : "2026-03-12",
+  "module" : "cs-daily"
 } ]
