@@ -39,7 +39,7 @@ class NewsBriefMailTest {
 
     @Test
     void isEnabled_설정이_true면_활성화() {
-        var moduleConfig = new MailConfig.ModuleConfig(true, List.of("정치", "경제", "IT"), null, false);
+        var moduleConfig = new MailConfig.ModuleConfig(true, false);
         when(mailConfig.modules()).thenReturn(Map.of("news-brief", moduleConfig));
 
         assertThat(newsBriefMail.isEnabled()).isTrue();
@@ -54,7 +54,7 @@ class NewsBriefMailTest {
 
     @Test
     void isEnabled_설정이_false면_비활성화() {
-        var moduleConfig = new MailConfig.ModuleConfig(false, null, null, false);
+        var moduleConfig = new MailConfig.ModuleConfig(false, false);
         when(mailConfig.modules()).thenReturn(Map.of("news-brief", moduleConfig));
 
         assertThat(newsBriefMail.isEnabled()).isFalse();

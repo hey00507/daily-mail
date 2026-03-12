@@ -3,7 +3,6 @@ package com.dailymail.config;
 import com.dailymail.config.DiscordConfig;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,29 +27,27 @@ class MailConfigTest {
         assertThat(config.channels()).isEmpty();
     }
 
-    @Test
-    void 모듈설정_기본값_처리() {
-        var config = new MailConfig.ModuleConfig(true, null, null, false);
+    // --- ModuleConfig ---
 
-        assertThat(config.tags()).isEmpty();
-        assertThat(config.categoryWeights()).isEmpty();
+    @Test
+    void 모듈설정_enabled_true() {
+        var config = new MailConfig.ModuleConfig(true, false);
         assertThat(config.enabled()).isTrue();
+        assertThat(config.skipIfEmpty()).isFalse();
     }
 
     @Test
-    void 모듈설정_값이_있으면_그대로() {
-        var config = new MailConfig.ModuleConfig(
-                true, List.of("tech", "경제"), Map.of("OS", 2), true
-        );
-
-        assertThat(config.tags()).containsExactly("tech", "경제");
-        assertThat(config.categoryWeights()).containsEntry("OS", 2);
+    void 모듈설정_skipIfEmpty_true() {
+        var config = new MailConfig.ModuleConfig(true, true);
+        assertThat(config.enabled()).isTrue();
         assertThat(config.skipIfEmpty()).isTrue();
     }
 
+    // --- MailConfig ---
+
     @Test
     void MailConfig_record_생성() {
-        var moduleConfig = new MailConfig.ModuleConfig(true, null, null, false);
+        var moduleConfig = new MailConfig.ModuleConfig(true, false);
         var mailConfig = new MailConfig("test@gmail.com", "all", Map.of("cs-daily", moduleConfig));
 
         assertThat(mailConfig.recipient()).isEqualTo("test@gmail.com");

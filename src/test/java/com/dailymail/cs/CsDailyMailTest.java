@@ -41,7 +41,7 @@ class CsDailyMailTest {
 
     @Test
     void isEnabled_설정이_true면_활성화() {
-        var moduleConfig = new MailConfig.ModuleConfig(true, null, null, false);
+        var moduleConfig = new MailConfig.ModuleConfig(true, false);
         when(mailConfig.modules()).thenReturn(Map.of("cs-daily", moduleConfig));
 
         assertThat(csDailyMail.isEnabled()).isTrue();
@@ -56,7 +56,7 @@ class CsDailyMailTest {
 
     @Test
     void isEnabled_설정이_false면_비활성화() {
-        var moduleConfig = new MailConfig.ModuleConfig(false, null, null, false);
+        var moduleConfig = new MailConfig.ModuleConfig(false, false);
         when(mailConfig.modules()).thenReturn(Map.of("cs-daily", moduleConfig));
 
         assertThat(csDailyMail.isEnabled()).isFalse();

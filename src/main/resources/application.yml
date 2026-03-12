@@ -19,11 +19,6 @@ mail:
   modules:
     news-brief:
       enabled: true
-      tags:
-        - tech
-        - 부동산
-        - 경제
-        - 정치
     cs-daily:
       enabled: true
     today-brief:

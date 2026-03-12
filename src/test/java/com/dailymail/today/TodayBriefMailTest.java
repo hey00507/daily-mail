@@ -33,7 +33,7 @@ class TodayBriefMailTest {
 
     @Test
     void isEnabled_설정이_true면_활성화() {
-        var config = new MailConfig.ModuleConfig(true, null, null, true);
+        var config = new MailConfig.ModuleConfig(true, true);
         when(mailConfig.modules()).thenReturn(Map.of("today-brief", config));
 
         assertThat(todayBriefMail.isEnabled()).isTrue();
@@ -48,7 +48,7 @@ class TodayBriefMailTest {
 
     @Test
     void isEnabled_설정이_false면_비활성화() {
-        var config = new MailConfig.ModuleConfig(false, null, null, false);
+        var config = new MailConfig.ModuleConfig(false, false);
         when(mailConfig.modules()).thenReturn(Map.of("today-brief", config));
 
         assertThat(todayBriefMail.isEnabled()).isFalse();
@@ -76,7 +76,7 @@ class TodayBriefMailTest {
     @Test
     void generate_일정없고_skipIfEmpty면_null() {
         when(calendarService.getTodayEvents()).thenReturn(List.of());
-        var config = new MailConfig.ModuleConfig(true, null, null, true);
+        var config = new MailConfig.ModuleConfig(true, true);
         when(mailConfig.modules()).thenReturn(Map.of("today-brief", config));
 
         MailContent content = todayBriefMail.generate();
@@ -87,7 +87,7 @@ class TodayBriefMailTest {
     @Test
     void generate_일정없고_skipIfEmpty가_false면_빈일정_메일발송() {
         when(calendarService.getTodayEvents()).thenReturn(List.of());
-        var config = new MailConfig.ModuleConfig(true, null, null, false);
+        var config = new MailConfig.ModuleConfig(true, false);
         when(mailConfig.modules()).thenReturn(Map.of("today-brief", config));
 
         MailContent content = todayBriefMail.generate();

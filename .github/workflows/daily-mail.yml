@@ -36,6 +36,7 @@ env:
 jobs:
   send-mail:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -53,12 +54,12 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "target=${{ github.event.inputs.module }}" >> $GITHUB_OUTPUT
           else
-            MINUTE=$(date -u +%M)
-            case $MINUTE in
-              0|00) echo "target=news-brief" >> $GITHUB_OUTPUT ;;
-              10) echo "target=cs-daily" >> $GITHUB_OUTPUT ;;
-              20) echo "target=today-brief" >> $GITHUB_OUTPUT ;;
-              *)  echo "target=all" >> $GITHUB_OUTPUT ;;
+            CRON="${{ github.event.schedule }}"
+            case "$CRON" in
+              "0 23 * * 0-4")  echo "target=news-brief" >> $GITHUB_OUTPUT ;;
+              "10 23 * * 0-4") echo "target=cs-daily" >> $GITHUB_OUTPUT ;;
+              "20 23 * * 0-4") echo "target=today-brief" >> $GITHUB_OUTPUT ;;
+              *)               echo "target=all" >> $GITHUB_OUTPUT ;;
             esac
           fi
 
