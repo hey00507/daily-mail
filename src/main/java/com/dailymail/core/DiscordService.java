@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -62,8 +64,14 @@ public class DiscordService {
             }
 
             log.info("Discord 발송 완료: {}", content.subject());
+        } catch (WebClientResponseException e) {
+            throw new DiscordSendException(
+                    "Discord API 응답 오류 (HTTP %d): %s".formatted(e.getStatusCode().value(), e.getResponseBodyAsString()),
+                    e.getStatusCode().value(),
+                    e
+            );
         } catch (Exception e) {
-            log.error("Discord 발송 실패: {}", e.getMessage());
+            throw new DiscordSendException("Discord 발송 중 오류: " + e.getMessage(), e);
         }
     }
 
