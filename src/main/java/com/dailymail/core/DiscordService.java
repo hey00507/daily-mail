@@ -120,9 +120,9 @@ public class DiscordService {
     }
 
     private void formatCsDaily(StringBuilder sb, Map<String, Object> variables) {
-        var content = variables.get("content");
-        if (content != null) {
-            sb.append(content);
+        var markdown = variables.get("contentMarkdown");
+        if (markdown != null) {
+            sb.append(markdown);
         }
     }
 

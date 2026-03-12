@@ -90,6 +90,7 @@ public class CsDailyMail implements MailModule {
                 "category", selection.category,
                 "topic", selection.topic,
                 "content", htmlContent,
+                "contentMarkdown", response,
                 "date", today
         ));
     }
