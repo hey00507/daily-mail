@@ -13,6 +13,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -129,11 +130,29 @@ class CalendarServiceTest {
     }
 
     @Test
-    void getTodayEvents_API_예외시_빈_리스트() {
+    void getTodayEvents_인증_실패시_예외_전파() {
         CalendarService service = new CalendarService("id", "secret", "token", () -> {
-            throw new RuntimeException("API 오류");
+            throw new RuntimeException("Google Calendar 인증 실패 — refresh token 갱신 필요");
         });
 
+        assertThatThrownBy(service::getTodayEvents)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("인증 실패");
+    }
+
+    @Test
+    void getTodayEvents_API_호출_예외시_빈_리스트() throws Exception {
+        Calendar mockCalendar = mock(Calendar.class, RETURNS_DEEP_STUBS);
+
+        when(mockCalendar.events().list(anyString())
+                .setTimeMin(org.mockito.ArgumentMatchers.any())
+                .setTimeMax(org.mockito.ArgumentMatchers.any())
+                .setOrderBy(anyString())
+                .setSingleEvents(true)
+                .execute()
+        ).thenThrow(new RuntimeException("API 네트워크 오류"));
+
+        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
         List<CalendarService.CalendarEvent> result = service.getTodayEvents();
 
         assertThat(result).isEmpty();

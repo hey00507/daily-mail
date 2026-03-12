@@ -49,9 +49,9 @@ public class CalendarService {
             return List.of();
         }
 
-        try {
-            Calendar service = calendarSupplier.get();
+        Calendar service = calendarSupplier.get();
 
+        try {
             LocalDate today = LocalDate.now(KST);
             DateTime timeMin = toDateTime(today.atStartOfDay());
             DateTime timeMax = toDateTime(today.plusDays(1).atStartOfDay());
