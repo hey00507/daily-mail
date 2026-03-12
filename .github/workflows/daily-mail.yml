@@ -2,9 +2,9 @@ name: Daily Mail
 
 on:
   schedule:
-    - cron: '30 1 * * 0-4'       # KST 10:30 — News Brief
-    - cron: '40 1 * * 0-4'       # KST 10:40 — CS Daily
-    - cron: '50 1 * * 0-4'       # KST 10:50 — Today Brief
+    - cron: '0 23 * * 0-4'        # KST 08:00 (월~금) — News Brief
+    - cron: '10 23 * * 0-4'       # KST 08:10 (월~금) — CS Daily
+    - cron: '20 23 * * 0-4'       # KST 08:20 (월~금) — Today Brief
   workflow_dispatch:
     inputs:
       module:
@@ -53,9 +53,9 @@ jobs:
           else
             MINUTE=$(date -u +%M)
             case $MINUTE in
-              30) echo "target=news-brief" >> $GITHUB_OUTPUT ;;
-              40) echo "target=cs-daily" >> $GITHUB_OUTPUT ;;
-              50) echo "target=today-brief" >> $GITHUB_OUTPUT ;;
+              0|00) echo "target=news-brief" >> $GITHUB_OUTPUT ;;
+              10) echo "target=cs-daily" >> $GITHUB_OUTPUT ;;
+              20) echo "target=today-brief" >> $GITHUB_OUTPUT ;;
               *)  echo "target=all" >> $GITHUB_OUTPUT ;;
             esac
           fi
