@@ -66,4 +66,8 @@
   "date" : "2026-03-12",
   "topic" : "인프라: Kubernetes 기초",
   "module" : "cs-daily"
+}, {
+  "date" : "2026-03-12",
+  "topic" : "Java/Spring: JVM 구조와 메모리",
+  "module" : "cs-daily"
 } ]
