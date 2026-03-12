@@ -26,7 +26,8 @@ public class DiscordService {
     }
 
     public boolean isEnabled() {
-        return !config.botToken().isBlank() && !config.channelId().isBlank();
+        return !config.botToken().isBlank()
+                && (!config.channelId().isBlank() || !config.channels().isEmpty());
     }
 
     private String resolveChannelId(String template) {
