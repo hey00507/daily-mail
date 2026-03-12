@@ -55,7 +55,7 @@ public class ClaudeService {
                     .retrieve()
                     .bodyToMono(Map.class)
                     .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
-                            .filter(ClaudeService::isTransient))
+                            .filter(WebClientRetry::isTransient))
                     .block(Duration.ofSeconds(30));
         } catch (WebClientResponseException e) {
             log.error("Claude API 에러 [{}]: {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -70,10 +70,4 @@ public class ClaudeService {
         return (String) content.getFirst().get("text");
     }
 
-    private static boolean isTransient(Throwable t) {
-        if (t instanceof WebClientResponseException e) {
-            return e.getStatusCode().is5xxServerError();
-        }
-        return true;
-    }
 }

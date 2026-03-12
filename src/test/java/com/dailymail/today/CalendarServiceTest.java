@@ -1,5 +1,6 @@
 package com.dailymail.today;
 
+import com.dailymail.config.GoogleCalendarConfig;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
@@ -23,25 +24,25 @@ class CalendarServiceTest {
 
     @Test
     void credentials가_비어있으면_미설정() {
-        CalendarService service = new CalendarService("", "", "", () -> null);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("", "", ""), () -> null);
         assertThat(service.isConfigured()).isFalse();
     }
 
     @Test
     void credentials가_clientSecret만_비어있으면_미설정() {
-        CalendarService service = new CalendarService("client-id", "", "token", () -> null);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("client-id", "", "token"), () -> null);
         assertThat(service.isConfigured()).isFalse();
     }
 
     @Test
     void credentials가_refreshToken만_비어있으면_미설정() {
-        CalendarService service = new CalendarService("client-id", "secret", "", () -> null);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("client-id", "secret", ""), () -> null);
         assertThat(service.isConfigured()).isFalse();
     }
 
     @Test
     void credentials가_모두_있으면_설정됨() {
-        CalendarService service = new CalendarService("id", "secret", "token", () -> null);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> null);
         assertThat(service.isConfigured()).isTrue();
     }
 
@@ -49,7 +50,7 @@ class CalendarServiceTest {
 
     @Test
     void 미설정이면_빈_리스트() {
-        CalendarService service = new CalendarService("", "", "", () -> null);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("", "", ""), () -> null);
         List<CalendarService.CalendarEvent> events = service.getTodayEvents();
         assertThat(events).isEmpty();
     }
@@ -77,7 +78,7 @@ class CalendarServiceTest {
                 .execute()
         ).thenReturn(events);
 
-        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> mockCalendar);
         List<CalendarService.CalendarEvent> result = service.getTodayEvents();
 
         assertThat(result).hasSize(1);
@@ -106,7 +107,7 @@ class CalendarServiceTest {
                 .execute()
         ).thenReturn(events);
 
-        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> mockCalendar);
         List<CalendarService.CalendarEvent> result = service.getTodayEvents();
 
         assertThat(result).hasSize(1);
@@ -133,7 +134,7 @@ class CalendarServiceTest {
                 .execute()
         ).thenReturn(events);
 
-        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> mockCalendar);
         List<CalendarService.CalendarEvent> result = service.getTodayEvents();
 
         assertThat(result).hasSize(1);
@@ -167,7 +168,7 @@ class CalendarServiceTest {
                 .execute()
         ).thenReturn(events);
 
-        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> mockCalendar);
         List<CalendarService.CalendarEvent> results = service.getTodayEvents();
 
         assertThat(results).hasSize(3);
@@ -191,7 +192,7 @@ class CalendarServiceTest {
                 .execute()
         ).thenReturn(events);
 
-        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> mockCalendar);
         List<CalendarService.CalendarEvent> result = service.getTodayEvents();
 
         assertThat(result).isEmpty();
@@ -211,7 +212,7 @@ class CalendarServiceTest {
                 .execute()
         ).thenReturn(events);
 
-        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> mockCalendar);
         List<CalendarService.CalendarEvent> result = service.getTodayEvents();
 
         assertThat(result).isEmpty();
@@ -219,7 +220,7 @@ class CalendarServiceTest {
 
     @Test
     void getTodayEvents_인증_실패시_예외_전파() {
-        CalendarService service = new CalendarService("id", "secret", "token", () -> {
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> {
             throw new RuntimeException("Google Calendar 인증 실패 — refresh token 갱신 필요");
         });
 
@@ -240,7 +241,7 @@ class CalendarServiceTest {
                 .execute()
         ).thenThrow(new RuntimeException("API 네트워크 오류"));
 
-        CalendarService service = new CalendarService("id", "secret", "token", () -> mockCalendar);
+        CalendarService service = new CalendarService(new GoogleCalendarConfig("id", "secret", "token"), () -> mockCalendar);
         List<CalendarService.CalendarEvent> result = service.getTodayEvents();
 
         assertThat(result).isEmpty();

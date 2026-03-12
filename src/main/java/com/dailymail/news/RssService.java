@@ -1,8 +1,8 @@
 package com.dailymail.news;
 
 import lombok.extern.slf4j.Slf4j;
+import com.dailymail.core.WebClientRetry;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -73,7 +73,7 @@ public class RssService {
                 .retrieve()
                 .bodyToMono(String.class)
                 .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
-                        .filter(RssService::isTransient))
+                        .filter(WebClientRetry::isTransient))
                 .block(Duration.ofSeconds(10));
 
         if (xml == null || xml.isBlank()) return List.of();
@@ -125,13 +125,6 @@ public class RssService {
             return nodes.item(0).getTextContent().trim();
         }
         return "";
-    }
-
-    private static boolean isTransient(Throwable t) {
-        if (t instanceof WebClientResponseException e) {
-            return e.getStatusCode().is5xxServerError();
-        }
-        return true;
     }
 
     public record RssFeed(String name, String url) {}

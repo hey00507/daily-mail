@@ -1,11 +1,11 @@
 package com.dailymail.today;
 
+import com.dailymail.config.GoogleCalendarConfig;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,25 +22,16 @@ public class CalendarService {
 
     static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
-    private final String clientId;
-    private final String clientSecret;
-    private final String refreshToken;
+    private final GoogleCalendarConfig config;
     private final Supplier<Calendar> calendarSupplier;
 
-    public CalendarService(
-            @Value("${google.calendar.client-id:}") String clientId,
-            @Value("${google.calendar.client-secret:}") String clientSecret,
-            @Value("${google.calendar.refresh-token:}") String refreshToken,
-            Supplier<Calendar> calendarSupplier
-    ) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.refreshToken = refreshToken;
+    public CalendarService(GoogleCalendarConfig config, Supplier<Calendar> calendarSupplier) {
+        this.config = config;
         this.calendarSupplier = calendarSupplier;
     }
 
     public boolean isConfigured() {
-        return !clientId.isBlank() && !clientSecret.isBlank() && !refreshToken.isBlank();
+        return config.isConfigured();
     }
 
     public List<CalendarEvent> getTodayEvents() {

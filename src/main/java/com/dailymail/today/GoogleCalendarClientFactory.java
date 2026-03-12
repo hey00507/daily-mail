@@ -1,12 +1,12 @@
 package com.dailymail.today;
 
+import com.dailymail.config.GoogleCalendarConfig;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.UserCredentials;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
@@ -14,27 +14,19 @@ import java.util.function.Supplier;
 @Component
 public class GoogleCalendarClientFactory implements Supplier<Calendar> {
 
-    private final String clientId;
-    private final String clientSecret;
-    private final String refreshToken;
+    private final GoogleCalendarConfig config;
 
-    public GoogleCalendarClientFactory(
-            @Value("${google.calendar.client-id:}") String clientId,
-            @Value("${google.calendar.client-secret:}") String clientSecret,
-            @Value("${google.calendar.refresh-token:}") String refreshToken
-    ) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.refreshToken = refreshToken;
+    public GoogleCalendarClientFactory(GoogleCalendarConfig config) {
+        this.config = config;
     }
 
     @Override
     public Calendar get() {
         try {
             GoogleCredentials credentials = UserCredentials.newBuilder()
-                    .setClientId(clientId)
-                    .setClientSecret(clientSecret)
-                    .setRefreshToken(refreshToken)
+                    .setClientId(config.clientId())
+                    .setClientSecret(config.clientSecret())
+                    .setRefreshToken(config.refreshToken())
                     .build();
             credentials.refreshIfExpired();
 

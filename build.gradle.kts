@@ -61,7 +61,8 @@ tasks.jacocoTestReport {
 		fileTree(it) {
 			exclude(
 				"com/dailymail/DailyMailApplication.class",
-				"com/dailymail/today/GoogleCalendarClientFactory.class"
+				"com/dailymail/today/GoogleCalendarClientFactory.class",
+				"com/dailymail/news/RssConfig.class"
 			)
 		}
 	}))

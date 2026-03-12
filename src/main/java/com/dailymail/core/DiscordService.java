@@ -2,7 +2,6 @@ package com.dailymail.core;
 
 import com.dailymail.config.DiscordConfig;
 import com.dailymail.news.NewsBriefMail.SummarizedNews;
-import com.dailymail.today.CalendarService.CalendarEvent;
 import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,8 +97,6 @@ public class DiscordService {
         switch (content.template()) {
             case "news-brief" -> formatNewsBrief(sb, variables);
             case "cs-daily" -> formatCsDaily(sb, variables);
-            case "today-brief" -> formatTodayBrief(sb, variables);
-            default -> sb.append("(알 수 없는 템플릿: ").append(content.template()).append(")");
         }
 
         return sb.toString();
@@ -128,25 +125,6 @@ public class DiscordService {
         var markdown = variables.get("contentMarkdown");
         if (markdown != null) {
             sb.append(markdown);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void formatTodayBrief(StringBuilder sb, Map<String, Object> variables) {
-        var events = (List<CalendarEvent>) variables.get("events");
-        var hasEvents = (Boolean) variables.getOrDefault("hasEvents", false);
-
-        if (!hasEvents || events == null || events.isEmpty()) {
-            sb.append("오늘 일정이 없습니다.");
-            return;
-        }
-
-        for (CalendarEvent event : events) {
-            sb.append("- **").append(event.startTime()).append("** ").append(event.title());
-            if (event.location() != null && !event.location().isEmpty()) {
-                sb.append(" (").append(event.location()).append(")");
-            }
-            sb.append("\n");
         }
     }
 
