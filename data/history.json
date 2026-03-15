@@ -74,4 +74,8 @@
   "date" : "2026-03-12",
   "module" : "cs-daily",
   "topic" : "Java/Spring: 트랜잭션 전파"
+}, {
+  "date" : "2026-03-15",
+  "module" : "cs-daily",
+  "topic" : "Java/Spring: 가비지 컬렉션"
 } ]
