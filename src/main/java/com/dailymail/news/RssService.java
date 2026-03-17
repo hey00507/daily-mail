@@ -32,8 +32,7 @@ public class RssService {
                     new RssFeed("한국경제", "https://www.hankyung.com/feed/economy")
             ),
             "IT", List.of(
-                    new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/economy/tech/?outputType=xml"),
-                    new RssFeed("동아일보", "https://rss.donga.com/it.xml"),
+                    new RssFeed("동아일보", "https://rss.donga.com/science.xml"),
                     new RssFeed("한국경제", "https://www.hankyung.com/feed/it")
             )
     );
