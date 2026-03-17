@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -52,17 +53,32 @@ public class RssService {
         List<RssFeed> categoryFeeds = feeds.get(category);
         if (categoryFeeds == null) return List.of();
 
-        List<NewsItem> allItems = new ArrayList<>();
+        int perSource = Math.max(2, (limit + categoryFeeds.size() - 1) / categoryFeeds.size());
+
+        // 소스별로 균등 수집
+        List<List<NewsItem>> perSourceItems = new ArrayList<>();
         for (RssFeed feed : categoryFeeds) {
             try {
                 List<NewsItem> items = fetchFeed(feed);
-                allItems.addAll(items);
+                perSourceItems.add(items.stream().limit(perSource).toList());
+                log.info("[{}] RSS 수집 성공: {}건", feed.name(), items.size());
             } catch (Exception e) {
                 log.warn("[{}] RSS 수집 실패: {}", feed.name(), e.getMessage());
             }
         }
 
-        return allItems.stream()
+        // 라운드로빈 인터리빙 — 소스별 균등 배치 (결정적 순서)
+        List<NewsItem> interleaved = new ArrayList<>();
+        int maxSize = perSourceItems.stream().mapToInt(List::size).max().orElse(0);
+        for (int i = 0; i < maxSize; i++) {
+            for (List<NewsItem> items : perSourceItems) {
+                if (i < items.size()) {
+                    interleaved.add(items.get(i));
+                }
+            }
+        }
+
+        return interleaved.stream()
                 .limit(limit)
                 .toList();
     }
@@ -70,6 +86,7 @@ public class RssService {
     private List<NewsItem> fetchFeed(RssFeed feed) {
         String xml = webClient.get()
                 .uri(feed.url())
+                .header("User-Agent", "Mozilla/5.0 (compatible; DailyMail/1.0; +https://github.com/hey00507/daily-mail)")
                 .retrieve()
                 .bodyToMono(String.class)
                 .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))

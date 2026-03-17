@@ -13,7 +13,7 @@ class MailConfigTest {
 
     @Test
     void DiscordConfig_null_파라미터_기본값() {
-        var config = new DiscordConfig(null, null, null);
+        var config = new DiscordConfig(false, null, null, null);
         assertThat(config.botToken()).isEmpty();
         assertThat(config.channelId()).isEmpty();
         assertThat(config.channels()).isEmpty();
@@ -21,7 +21,7 @@ class MailConfigTest {
 
     @Test
     void DiscordConfig_일부만_null() {
-        var config = new DiscordConfig("token", null, null);
+        var config = new DiscordConfig(true, "token", null, null);
         assertThat(config.botToken()).isEqualTo("token");
         assertThat(config.channelId()).isEmpty();
         assertThat(config.channels()).isEmpty();

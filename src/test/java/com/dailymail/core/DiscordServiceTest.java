@@ -24,36 +24,43 @@ class DiscordServiceTest {
     // --- isEnabled ---
 
     @Test
+    void enabled_false면_토큰_있어도_비활성화() {
+        var config = new DiscordConfig(false, "test-token", "123456", Map.of());
+        var service = new DiscordService(config, UNUSED_URL);
+        assertThat(service.isEnabled()).isFalse();
+    }
+
+    @Test
     void 토큰이_비어있으면_비활성화() {
-        var config = new DiscordConfig("", "", Map.of());
+        var config = new DiscordConfig(true, "", "", Map.of());
         var service = new DiscordService(config, UNUSED_URL);
         assertThat(service.isEnabled()).isFalse();
     }
 
     @Test
     void 토큰과_기본채널ID_있으면_활성화() {
-        var config = new DiscordConfig("test-token", "123456", Map.of());
+        var config = new DiscordConfig(true, "test-token", "123456", Map.of());
         var service = new DiscordService(config, UNUSED_URL);
         assertThat(service.isEnabled()).isTrue();
     }
 
     @Test
     void 기본채널ID_없어도_모듈별_채널_있으면_활성화() {
-        var config = new DiscordConfig("test-token", "", Map.of("cs-daily", "111"));
+        var config = new DiscordConfig(true, "test-token", "", Map.of("cs-daily", "111"));
         var service = new DiscordService(config, UNUSED_URL);
         assertThat(service.isEnabled()).isTrue();
     }
 
     @Test
     void 토큰_없으면_모듈별_채널_있어도_비활성화() {
-        var config = new DiscordConfig("", "", Map.of("cs-daily", "111"));
+        var config = new DiscordConfig(true, "", "", Map.of("cs-daily", "111"));
         var service = new DiscordService(config, UNUSED_URL);
         assertThat(service.isEnabled()).isFalse();
     }
 
     @Test
     void 토큰_있고_기본채널_blank_모듈채널_비어있으면_비활성화() {
-        var config = new DiscordConfig("test-token", "", Map.of());
+        var config = new DiscordConfig(true, "test-token", "", Map.of());
         var service = new DiscordService(config, UNUSED_URL);
         assertThat(service.isEnabled()).isFalse();
     }
@@ -62,7 +69,7 @@ class DiscordServiceTest {
 
     @Test
     void 비활성화_상태면_send_스킵() {
-        var config = new DiscordConfig("", "", Map.of());
+        var config = new DiscordConfig(true, "", "", Map.of());
         var service = new DiscordService(config, UNUSED_URL);
         var content = new MailContent("[CS] 테스트", "cs-daily", Map.of("contentMarkdown", "테스트"));
         service.send(content);
@@ -70,7 +77,7 @@ class DiscordServiceTest {
 
     @Test
     void 지원하지_않는_템플릿이면_send_스킵() {
-        var config = new DiscordConfig("test-token", "123", Map.of());
+        var config = new DiscordConfig(true, "test-token", "123", Map.of());
         var service = new DiscordService(config, UNUSED_URL);
         var content = new MailContent("[Today] 테스트", "today-brief", Map.of());
         service.send(content);
@@ -94,7 +101,7 @@ class DiscordServiceTest {
     }
 
     private DiscordService createServiceWithMockServer(String channelId, Map<String, String> channels) {
-        var config = new DiscordConfig("test-bot-token", channelId, channels);
+        var config = new DiscordConfig(true, "test-bot-token", channelId, channels);
         return new DiscordService(config, mockServer.url("/").toString());
     }
 
@@ -271,7 +278,7 @@ class DiscordServiceTest {
     void send_연결_실패시_일반_DiscordSendException() throws IOException {
         mockServer.shutdown();
 
-        var config = new DiscordConfig("test-bot-token", "999", Map.of());
+        var config = new DiscordConfig(true, "test-bot-token", "999", Map.of());
         var service = new DiscordService(config, "http://localhost:" + mockServer.getPort());
 
         var content = new MailContent("[CS] 테스트", "cs-daily", Map.of("contentMarkdown", "내용"));

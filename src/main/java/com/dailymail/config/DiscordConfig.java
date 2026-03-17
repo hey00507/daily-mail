@@ -6,6 +6,7 @@ import java.util.Map;
 
 @ConfigurationProperties(prefix = "discord")
 public record DiscordConfig(
+        boolean enabled,
         String botToken,
         String channelId,
         Map<String, String> channels
