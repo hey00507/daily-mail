@@ -23,19 +23,16 @@ public class RssService {
     public static final Map<String, List<RssFeed>> DEFAULT_FEEDS = Map.of(
             "정치", List.of(
                     new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/politics/?outputType=xml"),
-                    new RssFeed("중앙일보", "https://rss.joins.com/joins_politics_list.xml"),
                     new RssFeed("동아일보", "https://rss.donga.com/politics.xml"),
                     new RssFeed("한국경제", "https://www.hankyung.com/feed/politics")
             ),
             "경제", List.of(
                     new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/economy/?outputType=xml"),
-                    new RssFeed("중앙일보", "https://rss.joins.com/joins_money_list.xml"),
                     new RssFeed("동아일보", "https://rss.donga.com/economy.xml"),
                     new RssFeed("한국경제", "https://www.hankyung.com/feed/economy")
             ),
             "IT", List.of(
                     new RssFeed("조선일보", "https://www.chosun.com/arc/outboundfeeds/rss/category/economy/tech/?outputType=xml"),
-                    new RssFeed("중앙일보", "https://rss.joins.com/joins_it_list.xml"),
                     new RssFeed("동아일보", "https://rss.donga.com/it.xml"),
                     new RssFeed("한국경제", "https://www.hankyung.com/feed/it")
             )
