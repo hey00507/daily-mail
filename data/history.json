@@ -82,4 +82,8 @@
   "date" : "2026-03-16",
   "module" : "cs-daily",
   "topic" : "Java/Spring: Spring AOP"
+}, {
+  "date" : "2026-03-17",
+  "module" : "cs-daily",
+  "topic" : "DB: MVCC"
 } ]
