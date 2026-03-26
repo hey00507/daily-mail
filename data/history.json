@@ -110,4 +110,8 @@
   "date" : "2026-03-25",
   "module" : "cs-daily",
   "topic" : "아키텍처: Saga 패턴과 분산 트랜잭션"
+}, {
+  "module" : "cs-daily",
+  "date" : "2026-03-26",
+  "topic" : "자료구조/알고리즘: 그래프 탐색 BFS/DFS"
 } ]
