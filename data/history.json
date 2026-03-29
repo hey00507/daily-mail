@@ -114,4 +114,8 @@
   "module" : "cs-daily",
   "date" : "2026-03-26",
   "topic" : "자료구조/알고리즘: 그래프 탐색 BFS/DFS"
+}, {
+  "module" : "cs-daily",
+  "date" : "2026-03-29",
+  "topic" : "보안: HTTPS와 TLS Handshake"
 } ]
