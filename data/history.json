@@ -122,4 +122,8 @@
   "date" : "2026-03-30",
   "module" : "cs-daily",
   "topic" : "JavaScript/TypeScript: 프로토타입과 상속"
+}, {
+  "module" : "cs-daily",
+  "topic" : "인프라/DevOps: 컨테이너 오케스트레이션 비교",
+  "date" : "2026-03-31"
 } ]
