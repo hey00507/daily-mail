@@ -134,4 +134,8 @@
   "topic" : "디자인패턴: 전략 패턴",
   "date" : "2026-04-02",
   "module" : "cs-daily"
+}, {
+  "date" : "2026-04-05",
+  "module" : "cs-daily",
+  "topic" : "인프라/DevOps: Docker 컨테이너와 이미지 레이어"
 } ]
