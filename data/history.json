@@ -146,4 +146,8 @@
   "module" : "cs-daily",
   "date" : "2026-04-07",
   "topic" : "자료구조/알고리즘: Trie와 문자열 탐색"
+}, {
+  "topic" : "Network: TCP 3-way handshake",
+  "module" : "cs-daily",
+  "date" : "2026-04-08"
 } ]
