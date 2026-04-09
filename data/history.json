@@ -150,4 +150,8 @@
   "topic" : "Network: TCP 3-way handshake",
   "module" : "cs-daily",
   "date" : "2026-04-08"
+}, {
+  "topic" : "아키텍처: 메시지 큐",
+  "date" : "2026-04-09",
+  "module" : "cs-daily"
 } ]
