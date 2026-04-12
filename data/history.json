@@ -154,4 +154,8 @@
   "topic" : "아키텍처: 메시지 큐",
   "date" : "2026-04-09",
   "module" : "cs-daily"
+}, {
+  "date" : "2026-04-12",
+  "module" : "cs-daily",
+  "topic" : "인프라/DevOps: 모니터링과 옵저버빌리티"
 } ]
