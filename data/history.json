@@ -158,4 +158,8 @@
   "date" : "2026-04-12",
   "module" : "cs-daily",
   "topic" : "인프라/DevOps: 모니터링과 옵저버빌리티"
+}, {
+  "topic" : "Network: TCP vs UDP",
+  "date" : "2026-04-13",
+  "module" : "cs-daily"
 } ]
