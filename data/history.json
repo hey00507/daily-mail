@@ -166,4 +166,8 @@
   "topic" : "JavaScript/TypeScript: Promise와 async/await",
   "module" : "cs-daily",
   "date" : "2026-04-14"
+}, {
+  "topic" : "보안: JWT와 세션 기반 인증",
+  "module" : "cs-daily",
+  "date" : "2026-04-15"
 } ]
