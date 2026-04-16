@@ -170,4 +170,8 @@
   "topic" : "보안: JWT와 세션 기반 인증",
   "module" : "cs-daily",
   "date" : "2026-04-15"
+}, {
+  "date" : "2026-04-16",
+  "module" : "cs-daily",
+  "topic" : "아키텍처: API Gateway"
 } ]
