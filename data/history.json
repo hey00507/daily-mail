@@ -174,4 +174,8 @@
   "date" : "2026-04-16",
   "module" : "cs-daily",
   "topic" : "아키텍처: API Gateway"
+}, {
+  "date" : "2026-04-19",
+  "module" : "cs-daily",
+  "topic" : "자료구조/알고리즘: 트리와 이진탐색트리"
 } ]
