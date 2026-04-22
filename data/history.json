@@ -186,4 +186,8 @@
   "date" : "2026-04-21",
   "module" : "cs-daily",
   "topic" : "Java/Spring: Spring WebFlux와 리액티브 프로그래밍"
+}, {
+  "topic" : "아키텍처: 캐싱 전략",
+  "date" : "2026-04-22",
+  "module" : "cs-daily"
 } ]
