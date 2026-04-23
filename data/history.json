@@ -190,4 +190,8 @@
   "topic" : "아키텍처: 캐싱 전략",
   "date" : "2026-04-22",
   "module" : "cs-daily"
+}, {
+  "topic" : "OS: 시스템 콜과 인터럽트",
+  "date" : "2026-04-23",
+  "module" : "cs-daily"
 } ]
