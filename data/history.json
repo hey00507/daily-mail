@@ -194,4 +194,8 @@
   "topic" : "OS: 시스템 콜과 인터럽트",
   "date" : "2026-04-23",
   "module" : "cs-daily"
+}, {
+  "module" : "cs-daily",
+  "date" : "2026-04-26",
+  "topic" : "인프라/DevOps: 서비스 메시와 Istio"
 } ]
