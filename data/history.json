@@ -198,4 +198,8 @@
   "module" : "cs-daily",
   "date" : "2026-04-26",
   "topic" : "인프라/DevOps: 서비스 메시와 Istio"
+}, {
+  "date" : "2026-04-27",
+  "topic" : "Network: HTTP/HTTPS",
+  "module" : "cs-daily"
 } ]
