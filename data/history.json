@@ -202,4 +202,8 @@
   "date" : "2026-04-27",
   "topic" : "Network: HTTP/HTTPS",
   "module" : "cs-daily"
+}, {
+  "topic" : "Network: CORS와 Preflight",
+  "date" : "2026-04-28",
+  "module" : "cs-daily"
 } ]
