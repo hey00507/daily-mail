@@ -206,4 +206,8 @@
   "topic" : "Network: CORS와 Preflight",
   "date" : "2026-04-28",
   "module" : "cs-daily"
+}, {
+  "topic" : "디자인패턴: 팩토리 패턴",
+  "module" : "cs-daily",
+  "date" : "2026-04-29"
 } ]
