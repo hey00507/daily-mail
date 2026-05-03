@@ -214,4 +214,8 @@
   "date" : "2026-04-30",
   "module" : "cs-daily",
   "topic" : "아키텍처: CQRS 패턴"
+}, {
+  "module" : "cs-daily",
+  "date" : "2026-05-03",
+  "topic" : "보안: API 보안과 Rate Limiting"
 } ]
