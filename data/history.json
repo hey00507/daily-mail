@@ -222,4 +222,8 @@
   "topic" : "보안: CORS 정책과 CSP",
   "module" : "cs-daily",
   "date" : "2026-05-04"
+}, {
+  "date" : "2026-05-05",
+  "topic" : "OS: 페이징과 세그멘테이션",
+  "module" : "cs-daily"
 } ]
