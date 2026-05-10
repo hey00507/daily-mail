@@ -234,4 +234,8 @@
   "topic" : "OS: 데드락",
   "date" : "2026-05-07",
   "module" : "cs-daily"
+}, {
+  "module" : "cs-daily",
+  "date" : "2026-05-10",
+  "topic" : "자료구조/알고리즘: 동적 프로그래밍"
 } ]
