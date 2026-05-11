@@ -238,4 +238,8 @@
   "module" : "cs-daily",
   "date" : "2026-05-10",
   "topic" : "자료구조/알고리즘: 동적 프로그래밍"
+}, {
+  "date" : "2026-05-11",
+  "module" : "cs-daily",
+  "topic" : "OS: 가상 메모리"
 } ]
